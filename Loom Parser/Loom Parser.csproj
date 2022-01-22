@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{DADA5B84-024C-46A0-BEED-DBABD573EFC8}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Loom_Parser</RootNamespace>
+    <AssemblyName>Loom Parser</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Parser\ASTGen\AST\Expressions\VariableExpression.cs" />
+    <Compile Include="Parser\ASTGen\AST\Statements\WhileStatement.cs" />
+    <Compile Include="Parser\ASTGen\AST\Statements\IfStatement.cs" />
+    <Compile Include="Parser\PrettyPrint\PrettyPrinter.cs" />
+    <Compile Include="Parser\ASTGen\AST\DataTypes.cs" />
+    <Compile Include="Parser\ASTGen\AST\Expressions\ConstantExpression.cs" />
+    <Compile Include="Parser\ASTGen\AST\Expressions\Expression.cs" />
+    <Compile Include="Parser\ASTGen\AST\Expressions\ExpressionList.cs" />
+    <Compile Include="Parser\ASTGen\AST\Expressions\FunctionCallExpression.cs" />
+    <Compile Include="Parser\ASTGen\AST\Expressions\RelationalExpression.cs" />
+    <Compile Include="Parser\ASTGen\AST\Statements\FunctionCallStatement.cs" />
+    <Compile Include="Parser\ASTGen\AST\Statements\FunctionDeclarationStatement.cs" />
+    <Compile Include="Parser\ASTGen\AST\Statements\Statement.cs" />
+    <Compile Include="Parser\ASTGen\AST\Statements\StatementList.cs" />
+    <Compile Include="Parser\ASTGen\AST\Statements\VariableAssignStatement.cs" />
+    <Compile Include="Parser\ASTGen\CodeGenerator.cs" />
+    <Compile Include="Parser\ASTGen\TokenReader.cs" />
+    <Compile Include="Parser\PrettyPrint\PrettyPrinterSettings.cs" />
+    <Compile Include="Parser\Lexer\CodeLexer.cs" />
+    <Compile Include="Parser\Lexer\Objects\LexKind.cs" />
+    <Compile Include="Parser\Lexer\Objects\LexToken.cs" />
+    <Compile Include="Parser\Lexer\Objects\LexTokenList.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="Tests\Function.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Tests\IfCondition.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Tests\Print.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Tests\Sample.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
