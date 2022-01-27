@@ -135,7 +135,7 @@ namespace Loom_Parser.Parser.ASTGen
                 }
             }
 
-            return false;
+            return false; 
         }
 
         bool ParseConcatExpression(Expression left, out ConcatExpression concatExpression)
