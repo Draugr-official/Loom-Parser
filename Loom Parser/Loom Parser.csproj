@@ -43,7 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Obfuscator\ObfCore.cs" />
+    <Compile Include="Parser\ASTGen\AST\Expressions\BinaryExpression.cs" />
+    <Compile Include="Parser\ASTGen\AST\Expressions\ConcatExpression.cs" />
+    <Compile Include="Parser\ASTGen\AST\Expressions\ArrayExpression.cs" />
+    <Compile Include="Parser\ASTGen\AST\Expressions\IndexExpression.cs" />
     <Compile Include="Parser\ASTGen\AST\Expressions\VariableExpression.cs" />
+    <Compile Include="Parser\ASTGen\AST\Statements\ReturnStatement.cs" />
     <Compile Include="Parser\ASTGen\AST\Statements\WhileStatement.cs" />
     <Compile Include="Parser\ASTGen\AST\Statements\IfStatement.cs" />
     <Compile Include="Parser\PrettyPrint\PrettyPrinter.cs" />

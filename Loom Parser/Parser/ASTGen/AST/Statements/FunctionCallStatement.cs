@@ -27,10 +27,17 @@ namespace Loom_Parser.Parser.ASTGen.AST.Statements
         /// </summary>
         /// <param name="name"></param>
         /// <param name="arguments"></param>
-        public FunctionCallStatement(string name, ExpressionList arguments)
+        public FunctionCallStatement(string name, ExpressionList arguments = null)
         {
             this.Name = name;
-            this.Arguments = arguments;
+            if(arguments == null)
+            {
+                this.Arguments = new ExpressionList();
+            }
+            else
+            {
+                this.Arguments = arguments;
+            }
         }
         
         /// <summary>

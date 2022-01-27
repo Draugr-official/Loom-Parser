@@ -167,6 +167,21 @@ namespace Loom_Parser.Parser.Lexer.Objects
         Div,
 
         /// <summary>
+        /// E.g '%'
+        /// </summary>
+        Mod,
+
+        /// <summary>
+        /// E.g '^'
+        /// </summary>
+        Exp,
+
+        /// <summary>
+        /// E.g '..'
+        /// </summary>
+        Concat,
+
+        /// <summary>
         /// End of file
         /// </summary>
         EOF

@@ -11,5 +11,9 @@ namespace Loom_Parser.Parser.ASTGen.AST.Statements
     /// </summary>
     class Statement
     {
+        /// <summary>
+        /// The locals defined within the currrent scope
+        /// </summary>
+        public Dictionary<string, VariableAssignStatement> Locals = new Dictionary<string, VariableAssignStatement>();
     }
 }

@@ -111,6 +111,15 @@ namespace Loom_Parser.Parser.Lexer
 
                     case ',': kind = LexKind.Comma; break;
 
+                    case '.':
+                        {
+                            if(Input[i + 1] == '.')
+                            {
+                                kind = LexKind.Concat;
+                            }
+                            break;
+                        }
+
                     case '"':
                         {
                             i++;
@@ -226,6 +235,17 @@ namespace Loom_Parser.Parser.Lexer
                             kind = LexKind.Div;
                             break;
                         }
+                    case '%':
+                        {
+                            kind = LexKind.Mod;
+                            break;
+                        }
+                    case '^':
+                        {
+
+                            kind = LexKind.Exp;
+                            break;
+                        }
 
                     // Discard
                     case ' ':
@@ -237,9 +257,10 @@ namespace Loom_Parser.Parser.Lexer
                         {
                             if (Char.IsLetterOrDigit(Input[i])
                                 || Input[i] == '.'
-                                || Input[i] == '_')
+                                || Input[i] == '_'
+                                || Input[i] == ':')
                             {
-                                while (Input.Length > i && (Char.IsLetterOrDigit(Input[i]) || Input[i] == '.' || Input[i] == '_'))
+                                while (Input.Length > i && (Char.IsLetterOrDigit(Input[i]) || Input[i] == '.' || Input[i] == ':' || Input[i] == '_'))
                                 {
                                     sb.Append(Input[i++]);
                                 }

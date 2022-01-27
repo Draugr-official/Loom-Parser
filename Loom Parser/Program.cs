@@ -4,6 +4,7 @@ using Loom_Parser.Parser.ASTGen;
 using Loom_Parser.Parser.ASTGen.AST.Statements;
 using Loom_Parser.Parser.Lexer.Objects;
 using System;
+using Loom_Parser.Obfuscator;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,17 +23,23 @@ namespace Loom_Parser
             LexTokenList lexTokens = codeLexer.Analyze();
 
             CodeGenerator codeGenerator = new CodeGenerator(lexTokens);
-            StatementList statements = codeGenerator.ParseStatements();
+            StatementList statements = codeGenerator.ParseStatements(new FunctionCallStatement());
 
             PrettyPrinter codeBeautifier = new PrettyPrinter(new PrettyPrinterSettings() 
             {
                 Indentation = "    ",
                 Minify = false,
-            }, statements);
+            });
 
             Console.WriteLine("Amount of statements; " + statements.Count.ToString());
-            Console.WriteLine("Prettyprint;");
-            Console.WriteLine(codeBeautifier.Beautify());
+            Console.WriteLine("Original;");
+            Console.WriteLine(codeBeautifier.Beautify(statements));
+
+            ObfCore obfCore = new ObfCore();
+            StatementList obfStatements = obfCore.Obfuscate(statements);
+
+            Console.WriteLine("\nObfuscated;");
+            Console.WriteLine(codeBeautifier.Beautify(obfStatements));
             Console.WriteLine("-- END --");
 
             Console.ReadLine();

@@ -19,6 +19,11 @@ namespace Loom_Parser.Parser.ASTGen.AST.Statements
         public string Name { get; set; }
 
         /// <summary>
+        /// Determines if the function declaration is named
+        /// </summary>
+        public bool IsAnonymous { get; set; }
+
+        /// <summary>
         /// The parameters of the function being declared
         /// </summary>
         public ExpressionList Parameters { get; set; }
@@ -42,6 +47,7 @@ namespace Loom_Parser.Parser.ASTGen.AST.Statements
         public FunctionDeclarationStatement(string name, ExpressionList parameters, StatementList body)
         {
             this.Name = name;
+            this.IsAnonymous = name == "";
             this.Parameters = parameters;
             this.Body = body;
         }
@@ -52,6 +58,7 @@ namespace Loom_Parser.Parser.ASTGen.AST.Statements
         public FunctionDeclarationStatement()
         {
             this.Name = "";
+            this.IsAnonymous = true;
             this.Parameters = new ExpressionList();
             this.Body = new StatementList();
         }
