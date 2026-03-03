@@ -219,60 +219,49 @@ namespace Loom_Parser.Parser.ASTGen
 
         bool ParseExpression(out Expression expression)
         {
-            expression = new Expression();
-
-            bool parsed = false;
+            expression = null;
 
             if(ParseArrayExpression(out ArrayExpression tableExpression))
             {
                 expression = tableExpression;
-                parsed = true;
             }
             if (ParseConstantExpression(out ConstantExpression constantExpression))
             {
                 expression = constantExpression;
-                parsed = true;
             }
             if (ParseIdentifierExpression(out IdentifierExpression identifierExpression))
             {
                 expression = identifierExpression;
-                parsed = true;
             }
 
             // Expression with left side expressions
             if (ParseIndexExpression(expression, out IndexExpression indexExpression))
             {
                 expression = indexExpression;
-                parsed = true;
             }
 
             if (ParseCallExpression(expression, out CallExpression callExpression))
             {
                 expression = callExpression;
-                parsed = true;
             }
 
             // Expressions with left and right side expressions
             if (ParseRelationalExpression(expression, out RelationalExpression relationalExpression))
             {
                 expression = relationalExpression;
-                parsed = true;
             }
 
             if (ParseBinaryExpression(expression, out BinaryExpression binaryExpression))
             {
                 expression = binaryExpression;
-                parsed = true;
-                return true;
             }
 
             if (ParseConcatExpression(expression, out ConcatExpression concatExpression))
             {
                 expression = concatExpression;
-                parsed = true;
             }
 
-            return parsed;
+            return expression != null;
         }
 
         ExpressionList ParseExpressions()
