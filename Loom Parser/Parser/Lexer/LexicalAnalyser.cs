@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Loom_Parser.Parser.Lexer
 {
-    class CodeLexer
+    class LexicalAnalyser
     {
         readonly List<string> Keywords = new List<string>
         {
@@ -38,7 +38,7 @@ namespace Loom_Parser.Parser.Lexer
 
         string Input { get; set; }
 
-        public CodeLexer(string Input)
+        public LexicalAnalyser(string Input)
         {
             this.Input = Input;
         }

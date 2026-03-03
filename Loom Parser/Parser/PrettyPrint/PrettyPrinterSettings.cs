@@ -11,11 +11,23 @@ namespace Loom_Parser.Parser.PrettyPrint
         /// <summary>
         /// The indentation applied by the code 
         /// </summary>
-        public string Indentation = "    ";
+        public string Indentation { get; set; }
 
         /// <summary>
-        /// Determines if the script should be minified
+        /// The newline applied to the code
         /// </summary>
-        public bool Minify = false;
+        public string NewLine { get; set; }
+
+        public PrettyPrinterSettings(string indentation, string newLine)
+        {
+            Indentation = indentation;
+            NewLine = newLine;
+        }
+
+        public static PrettyPrinterSettings Minify = new PrettyPrinterSettings("",
+            " ");
+
+        public static PrettyPrinterSettings Beautify = new PrettyPrinterSettings("\t",
+            Environment.NewLine);
     }
 }

@@ -21,7 +21,7 @@ namespace Loom_Parser.Parser.ASTGen.AST.Expressions
         /// </summary>
         public Expression Array { get; set; }
 
-        public IndexExpression(Expression array, Expression index)
+        public IndexExpression(Expression index, Expression array)
         {
             this.Array = array;
             this.Index = index;

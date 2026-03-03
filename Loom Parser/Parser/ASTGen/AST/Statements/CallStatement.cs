@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Loom_Parser.Parser.ASTGen.AST.Expressions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loom_Parser.Parser.ASTGen.AST.Expressions
+namespace Loom_Parser.Parser.ASTGen.AST.Statements
 {
     /// <summary>
-    /// Declares a function call as an expression
+    /// Declares a function being called to within a scope
     /// </summary>
-    class FunctionCallExpression : Expression
+    class CallStatement : Statement
     {
         /// <summary>
         /// The name of the function being called to
@@ -26,19 +27,26 @@ namespace Loom_Parser.Parser.ASTGen.AST.Expressions
         /// </summary>
         /// <param name="name"></param>
         /// <param name="arguments"></param>
-        public FunctionCallExpression(string name, ExpressionList arguments)
+        public CallStatement(string name, ExpressionList arguments = null)
         {
             this.Name = name;
-            this.Arguments = arguments;
+            if(arguments == null)
+            {
+                this.Arguments = new ExpressionList();
+            }
+            else
+            {
+                this.Arguments = arguments;
+            }
         }
-
+        
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public FunctionCallExpression()
+        public CallStatement()
         {
-            Name = "";
-            Arguments = new ExpressionList();
+            this.Name = "";
+            this.Arguments = new ExpressionList();
         }
     }
 }

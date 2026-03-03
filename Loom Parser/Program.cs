@@ -3,8 +3,9 @@ using Loom_Parser.Parser.Lexer;
 using Loom_Parser.Parser.ASTGen;
 using Loom_Parser.Parser.ASTGen.AST.Statements;
 using Loom_Parser.Parser.Lexer.Objects;
+using Loom_Parser.Parser.ASTGen.AST.Expressions;
+using Loom_Parser.Parser.ASTGen.AST;
 using System;
-using Loom_Parser.Obfuscator;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,28 +20,53 @@ namespace Loom_Parser
         {
             string script = File.ReadAllText("Tests\\Sample.lua");
 
-            CodeLexer codeLexer = new CodeLexer(script);
+            LexicalAnalyser codeLexer = new LexicalAnalyser(script);
             LexTokenList lexTokens = codeLexer.Analyze();
 
-            CodeGenerator codeGenerator = new CodeGenerator(lexTokens);
-            StatementList statements = codeGenerator.ParseStatements(new FunctionCallStatement());
+            ASTGenerator astGenerator = new ASTGenerator(lexTokens);
+            StatementList statements = astGenerator.ParseStatements(new CallStatement());
 
-            PrettyPrinter codeBeautifier = new PrettyPrinter(new PrettyPrinterSettings() 
-            {
-                Indentation = "    ",
-                Minify = false,
-            });
+            
+
+            //statements.Add(new VariableAssignStatement()
+            //{
+            //    IsLocal = true,
+            //    Name = "Stack",
+            //    Value = new ArrayExpression()
+            //    {
+            //        Array = new ExpressionList() { new IndexExpression() {  } }
+            //    }
+            //});
+
+            //statements.Add(new VariableAssignStatement()
+            //{
+            //    IsLocal = true,
+            //    Name = "getter",
+            //    Value = new IndexExpression()
+            //    {
+            //        Array = new VariableExpression()
+            //        {
+            //            Name = "Stack"
+            //        },
+            //        Index = new ConstantExpression()
+            //        {
+            //            Type = DataTypes.Number,
+            //            Value = "1"
+            //        }
+            //    }
+            //});
+
+            //statements.Add(new FunctionCallStatement()
+            //{
+            //    Name = "print",
+            //    Arguments = { new VariableExpression() { Name = "getter" } }
+            //});
+
+            PrettyPrinter prettyPrinter = new PrettyPrinter(PrettyPrinterSettings.Beautify);
 
             Console.WriteLine("Amount of statements; " + statements.Count.ToString());
             Console.WriteLine("Original;");
-            Console.WriteLine(codeBeautifier.Beautify(statements));
-
-            ObfCore obfCore = new ObfCore();
-            StatementList obfStatements = obfCore.Obfuscate(statements);
-
-            Console.WriteLine("\nObfuscated;");
-            Console.WriteLine(codeBeautifier.Beautify(obfStatements));
-            Console.WriteLine("-- END --");
+            Console.WriteLine(prettyPrinter.Print(statements));
 
             Console.ReadLine();
         }

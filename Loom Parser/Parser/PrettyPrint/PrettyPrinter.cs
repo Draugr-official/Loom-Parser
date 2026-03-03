@@ -97,9 +97,9 @@ namespace Loom_Parser.Parser.PrettyPrint
             GenerateExpression(relationalExpression.Right);
         }
 
-        void GenerateVariableExpression(VariableExpression variableExpression)
+        void GenerateIdentifierExpression(IdentifierExpression identifierExpression)
         {
-            scriptBuilder.Append(variableExpression.Name);
+            scriptBuilder.Append(identifierExpression.Identifier);
         }
 
         void GenerateConstantExpression(ConstantExpression constantExpression)
@@ -113,10 +113,11 @@ namespace Loom_Parser.Parser.PrettyPrint
                 scriptBuilder.Append(constantExpression.Value);
             }
         }
-        void GenerateFunctionCallExpression(FunctionCallExpression functionCallExpression)
+        void GenerateCallExpression(CallExpression callExpression)
         {
-            scriptBuilder.Append(functionCallExpression.Name + "(");
-            GenerateExpressions(functionCallExpression.Arguments);
+            GenerateExpression(callExpression.Operand);
+            scriptBuilder.Append("(");
+            GenerateExpressions(callExpression.Arguments);
             scriptBuilder.Append(")");
         }
 
@@ -126,9 +127,9 @@ namespace Loom_Parser.Parser.PrettyPrint
             {
                 GenerateConstantExpression(constantExpression);
             }
-            if(expression is VariableExpression variableExpression)
+            if(expression is IdentifierExpression variableExpression)
             {
-                GenerateVariableExpression(variableExpression);
+                GenerateIdentifierExpression(variableExpression);
             }
             if(expression is RelationalExpression relationalExpression)
             {
@@ -146,9 +147,9 @@ namespace Loom_Parser.Parser.PrettyPrint
             {
                 GenerateArrayExpression(arrayExpression);
             }
-            if(expression is FunctionCallExpression functionCallExpression)
+            if(expression is CallExpression functionCallExpression)
             {
-                GenerateFunctionCallExpression(functionCallExpression);
+                GenerateCallExpression(functionCallExpression);
             }
             if(expression is IndexExpression indexExpression)
             {
@@ -172,10 +173,10 @@ namespace Loom_Parser.Parser.PrettyPrint
 
         bool GenerateStatement(Statement statement, string indent)
         {
-            if(statement is FunctionCallStatement functionCallStatement)
+            if(statement is CallStatement callStatement)
             {
-                scriptBuilder.Append($"{indent + functionCallStatement.Name}(");
-                GenerateExpressions(functionCallStatement.Arguments);
+                scriptBuilder.Append($"{indent + callStatement.Name}(");
+                GenerateExpressions(callStatement.Arguments);
                 scriptBuilder.Append(")");
                 return true;
             }
@@ -183,7 +184,7 @@ namespace Loom_Parser.Parser.PrettyPrint
             {
                 scriptBuilder.Append($"{indent + (functionDeclarationStatement.IsLocal ? "local " : "")}function {functionDeclarationStatement.Name}(");
                 GenerateExpressions(functionDeclarationStatement.Parameters);
-                scriptBuilder.Append($")\n");;
+                scriptBuilder.Append($"){PrinterSettings.NewLine}");;
                 GenerateStatements(functionDeclarationStatement.Body, indent + PrinterSettings.Indentation);
                 scriptBuilder.Append($"{indent}end");
                 return true;
@@ -198,7 +199,7 @@ namespace Loom_Parser.Parser.PrettyPrint
             {
                 scriptBuilder.Append($"{indent}if ");
                 GenerateExpression(ifStatement.Condition);
-                scriptBuilder.Append(" then\n");
+                scriptBuilder.Append($" then{PrinterSettings.NewLine}");
                 GenerateStatements(ifStatement.Body, indent + PrinterSettings.Indentation);
                 scriptBuilder.Append("end");
                 return true;
@@ -207,7 +208,7 @@ namespace Loom_Parser.Parser.PrettyPrint
             {
                 scriptBuilder.Append($"{indent}while ");
                 GenerateExpression(whileStatement.Condition);
-                scriptBuilder.Append(" do\n");
+                scriptBuilder.Append($" do{PrinterSettings.NewLine}");
                 GenerateStatements(whileStatement.Body, indent + PrinterSettings.Indentation);
                 scriptBuilder.Append("end");
                 return true;
@@ -228,12 +229,12 @@ namespace Loom_Parser.Parser.PrettyPrint
             {
                 if (GenerateStatement(statement, indent))
                 {
-                    scriptBuilder.Append("\n");
+                    scriptBuilder.Append(PrinterSettings.NewLine);
                 }
             }
         }
 
-        public string Beautify(StatementList statements)
+        public string Print(StatementList statements)
         {
             scriptBuilder.Clear();
             GenerateStatements(statements, "");

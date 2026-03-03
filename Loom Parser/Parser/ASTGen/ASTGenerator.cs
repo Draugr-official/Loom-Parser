@@ -13,7 +13,7 @@ namespace Loom_Parser.Parser.ASTGen
     /// <summary>
     /// Abstract syntax tree generator
     /// </summary>
-    class CodeGenerator
+    class ASTGenerator
     {
         /// <summary>
         /// The token reader of the AST generator
@@ -24,42 +24,9 @@ namespace Loom_Parser.Parser.ASTGen
         /// <inheritdoc/>
         /// </summary>
         /// <param name="lexTokens"></param>
-        public CodeGenerator(LexTokenList lexTokens)
+        public ASTGenerator(LexTokenList lexTokens)
         {
             this.tokenReader = new TokenReader(lexTokens);
-            this.Variables = new Dictionary<string, VariableAssignStatement>();
-            this.Locals = new Dictionary<string, VariableAssignStatement>();
-        }
-
-        /// <summary>
-        /// Global variables in the script being parsed
-        /// </summary>
-        Dictionary<string, VariableAssignStatement> Variables { get; set; }
-
-        /// <summary>
-        /// Local variables defined in the current scope, cleared when exiting scope
-        /// </summary>
-        Dictionary<string, VariableAssignStatement> Locals    { get; set; }
-
-        VariableAssignStatement GetVariableFromName(string name)
-        {
-            if (this.Variables.ContainsKey(name))
-            {
-                return this.Variables[name];
-            }
-            else
-            {
-                return this.Locals[name];
-            }
-        }
-
-        void AddGlobalVariable(VariableAssignStatement variable)
-        {
-            if (!this.Variables.ContainsValue(variable))
-            {
-                Console.WriteLine("Added " + variable.Name);
-                this.Variables.Add(variable.Name, variable);
-            }
         }
 
         /* Expressions */
@@ -77,6 +44,7 @@ namespace Loom_Parser.Parser.ASTGen
                     indexExpression.Index = index;
                     if(tokenReader.Expect(LexKind.BracketClose))
                     {
+                        tokenReader.Skip(1);
                         return true;
                     }
                 }
@@ -85,52 +53,35 @@ namespace Loom_Parser.Parser.ASTGen
             return false;
         }
 
-        bool ParseArrayExpression(out ArrayExpression tableExpression)
+        bool ParseArrayExpression(out ArrayExpression arrayExpression)
         {
-            tableExpression = new ArrayExpression();
-            int Scope = 1;
+            arrayExpression = new ArrayExpression();
 
             if(tokenReader.Expect(LexKind.BraceOpen))
             {
-                tokenReader.Skip(1);
-                while (Scope > 0)
+                arrayExpression.Array = ParseExpressions();
+                if(tokenReader.ExpectFatal(LexKind.BraceClose))
                 {
-                    if (tokenReader.Expect(LexKind.BraceOpen))
-                    {
-                        Scope++;
-                    }
-                    else if (tokenReader.Expect(LexKind.BraceClose))
-                    {
-                        Scope--;
-                    }
-
-                    if (ParseExpression(out Expression expression))
-                    {
-                        tableExpression.Array.Add(expression);
-                    }
-                    else
-                    {
-                        tokenReader.Skip(1);
-                    }
+                    tokenReader.Skip(1);
+                    return true;
                 }
-
-                return true;
             }
 
             return false;
         }
 
-        bool ParseFunctionCallExpression(out FunctionCallExpression functionCallExpression)
+        bool ParseCallExpression(Expression left, out CallExpression callExpression)
         {
-            functionCallExpression = new FunctionCallExpression();
+            callExpression = new CallExpression();
+            callExpression.Operand = left;
 
-            if(tokenReader.Expect(LexKind.Identifier))
+            if (tokenReader.Expect(LexKind.ParentheseOpen))
             {
-                functionCallExpression.Name = tokenReader.Peek().Value;
-                if(tokenReader.Expect(LexKind.ParentheseOpen, 1))
+                tokenReader.Skip(1);
+                callExpression.Arguments = ParseExpressions();
+                if(tokenReader.ExpectFatal(LexKind.ParentheseClose))
                 {
-                    tokenReader.Skip(2);
-                    functionCallExpression.Arguments = ParseExpressions(); 
+                    tokenReader.Skip(1);
                     return true;
                 }
             }
@@ -183,6 +134,7 @@ namespace Loom_Parser.Parser.ASTGen
                 if (ParseExpression(out Expression right))
                 {
                     binaryExpression.Right = right;
+                    binaryExpression.Operator = binaryOperator;
                     return true;
                 }
             }
@@ -252,13 +204,13 @@ namespace Loom_Parser.Parser.ASTGen
             return false;
         }
 
-        bool ParseVariableExpression(out VariableExpression variableExpression)
+        bool ParseIdentifierExpression(out IdentifierExpression identifierExpression)
         {
-            variableExpression = new VariableExpression();
+            identifierExpression = new IdentifierExpression();
 
             if(tokenReader.Expect(LexKind.Identifier))
             {
-                variableExpression.VariableDef = GetVariableFromName(tokenReader.Consume().Value);
+                identifierExpression.Identifier = tokenReader.Consume().Value;
                 return true;
             }
 
@@ -268,71 +220,70 @@ namespace Loom_Parser.Parser.ASTGen
         bool ParseExpression(out Expression expression)
         {
             expression = new Expression();
-            bool parsedLayer = false;
 
-            if (!parsedLayer && ParseFunctionCallExpression(out FunctionCallExpression functionCallExpression))
-            {
-                expression = functionCallExpression;
-                parsedLayer = true;
-            }
-            if(!parsedLayer && ParseArrayExpression(out ArrayExpression tableExpression))
+            bool parsed = false;
+
+            if(ParseArrayExpression(out ArrayExpression tableExpression))
             {
                 expression = tableExpression;
-                parsedLayer = true;
+                parsed = true;
             }
-            if (!parsedLayer && ParseVariableExpression(out VariableExpression variableExpression))
-            {
-                expression = variableExpression;
-                parsedLayer = true;
-            }
-            if (!parsedLayer && ParseConstantExpression(out ConstantExpression constantExpression))
+            if (ParseConstantExpression(out ConstantExpression constantExpression))
             {
                 expression = constantExpression;
-                parsedLayer = true;
+                parsed = true;
             }
-
-            // Expressions with left expressions
-            if (parsedLayer && ParseRelationalExpression(expression, out RelationalExpression relationalExpression))
+            if (ParseIdentifierExpression(out IdentifierExpression identifierExpression))
             {
-                expression = relationalExpression;
-                return true;
+                expression = identifierExpression;
+                parsed = true;
             }
 
-            if (parsedLayer && ParseBinaryExpression(expression, out BinaryExpression binaryExpression))
-            {
-                expression = binaryExpression;
-                return true;
-            }
-
-            if (parsedLayer && ParseConcatExpression(expression, out ConcatExpression concatExpression))
-            {
-                expression = concatExpression;
-                return true;
-            }
-
-            if(parsedLayer && ParseIndexExpression(expression, out IndexExpression indexExpression))
+            // Expression with left side expressions
+            if (ParseIndexExpression(expression, out IndexExpression indexExpression))
             {
                 expression = indexExpression;
+                parsed = true;
+            }
+
+            if (ParseCallExpression(expression, out CallExpression callExpression))
+            {
+                expression = callExpression;
+                parsed = true;
+            }
+
+            // Expressions with left and right side expressions
+            if (ParseRelationalExpression(expression, out RelationalExpression relationalExpression))
+            {
+                expression = relationalExpression;
+                parsed = true;
+            }
+
+            if (ParseBinaryExpression(expression, out BinaryExpression binaryExpression))
+            {
+                expression = binaryExpression;
+                parsed = true;
                 return true;
             }
 
-            return parsedLayer;
+            if (ParseConcatExpression(expression, out ConcatExpression concatExpression))
+            {
+                expression = concatExpression;
+                parsed = true;
+            }
+
+            return parsed;
         }
 
         ExpressionList ParseExpressions()
         {
             ExpressionList expressionList = new ExpressionList();
-            int Scope = 1;
 
-            while (Scope > 0)
+            for(; ; )
             {
-                if (tokenReader.Expect(LexKind.ParentheseClose))
+                if (tokenReader.Expect(LexKind.Comma))
                 {
-                    Scope--;
-                }
-                else if (tokenReader.Expect(LexKind.ParentheseOpen))
-                {
-                    Scope++;
+                    tokenReader.Skip(1);
                 }
 
                 if (ParseExpression(out Expression expression))
@@ -342,8 +293,10 @@ namespace Loom_Parser.Parser.ASTGen
                 else
                 {
                     tokenReader.Skip(1);
+                    break;
                 }
             }
+
             return expressionList;
         }
 
@@ -437,9 +390,7 @@ namespace Loom_Parser.Parser.ASTGen
                     tokenReader.Skip(2 + localOffset);
                     if(ParseExpression(out Expression value))
                     {
-                        Console.WriteLine("Variable assign parsed");
                         variableAssignStatement.Value = value;
-                        AddGlobalVariable(variableAssignStatement);
 
                         return true;
                     }
@@ -496,18 +447,18 @@ namespace Loom_Parser.Parser.ASTGen
             return false;
         }
 
-        bool ParseFunctionCallStatement(out FunctionCallStatement functionCallStatement)
+        bool ParseCallStatement(out CallStatement callStatement)
         {
-            functionCallStatement = new FunctionCallStatement();
+            callStatement = new CallStatement();
 
             if (tokenReader.Expect(LexKind.Identifier))
             {
-                functionCallStatement.Name = tokenReader.Peek().Value;
-
-                if(tokenReader.Expect(LexKind.ParentheseOpen, 1))
+                if (tokenReader.Expect(LexKind.ParentheseOpen, 1))
                 {
+                    callStatement.Name = tokenReader.Peek().Value;
                     tokenReader.Skip(2);
-                    functionCallStatement.Arguments = ParseExpressions();
+                    callStatement.Arguments = ParseExpressions();
+
                     return true;
                 }
             }
@@ -521,9 +472,9 @@ namespace Loom_Parser.Parser.ASTGen
         bool ParseStatement(Statement parent, out Statement statement)
         {
             statement = new Statement();
-            if (ParseFunctionCallStatement(out FunctionCallStatement functionCallStatement))
+            if (ParseCallStatement(out CallStatement callStatement))
             {
-                statement = functionCallStatement;
+                statement = callStatement;
                 return true;
             }
             if(ParseFunctionDeclarationStatement(out FunctionDeclarationStatement functionDeclarationStatement))
