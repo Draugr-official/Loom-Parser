@@ -1,6 +1,6 @@
-﻿using Loom.Parser.ASTGen.AST;
-using Loom.Parser.ASTGen.AST.Expressions;
-using Loom.Parser.ASTGen.AST.Statements;
+﻿using Loom.Parser.ASTGenerator.AST;
+using Loom.Parser.ASTGenerator.AST.Expressions;
+using Loom.Parser.ASTGenerator.AST.Statements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -97,6 +97,20 @@ namespace Loom.Parser.PrettyPrint
             GenerateExpression(relationalExpression.Right);
         }
 
+        void GenerateLogicalExpression(LogicalExpression logicalExpression)
+        {
+            GenerateExpression(logicalExpression.Left);
+
+            switch (logicalExpression.Operator)
+            {
+                case LogicalOperators.And: scriptBuilder.Append(" and "); break;
+                case LogicalOperators.Or: scriptBuilder.Append(" or "); break;
+                case LogicalOperators.Not: scriptBuilder.Append(" not "); break;
+            }
+
+            GenerateExpression(logicalExpression.Right);
+        }
+
         void GenerateIdentifierExpression(IdentifierExpression identifierExpression)
         {
             scriptBuilder.Append(identifierExpression.Identifier);
@@ -112,21 +126,21 @@ namespace Loom.Parser.PrettyPrint
 
             scriptBuilder.Append(constantExpression.Value);
         }
-        void GenerateCallExpression(CallExpression callExpression)
+        void GenerateCallExpression(CallExpression callExpression, string indent = "", string newLine = " ")
         {
             GenerateExpression(callExpression.Operand);
             scriptBuilder.Append("(");
-            GenerateExpressions(callExpression.Arguments);
+            GenerateExpressions(callExpression.Arguments, indent, newLine);
             scriptBuilder.Append(")");
         }
 
-        void GenerateFunctionDeclarationExpression(FunctionDeclarationExpression functionDeclarationExpression)
+        void GenerateFunctionDeclarationExpression(FunctionDeclarationExpression functionDeclarationExpression, string indent, string newLine = " ")
         {
             scriptBuilder.Append($"function{(functionDeclarationExpression.IsAnonymous ? "" : $" {functionDeclarationExpression.Name.Identifier}")}(");
             GenerateExpressions(functionDeclarationExpression.Parameters);
-            scriptBuilder.Append($") ");
-            GenerateStatements(functionDeclarationExpression.Body, " ", "");
-            scriptBuilder.Append($" end");
+            scriptBuilder.Append($"){newLine}");
+            GenerateStatements(functionDeclarationExpression.Body, indent + PrinterSettings.Indentation, PrinterSettings.NewLine);
+            scriptBuilder.Append($"{indent}end");
         }
 
         void GenerateAssignmentExpression(AssignmentExpression assignmentExpression)
@@ -156,8 +170,6 @@ namespace Loom.Parser.PrettyPrint
                 scriptBuilder.Append($" else ");
                 GenerateExpression(ifExpression.ElseExpression);
             }
-
-            scriptBuilder.Append(" end");
         }
 
         void GenerateVarargExpression(VarargExpression varargExpression)
@@ -165,7 +177,7 @@ namespace Loom.Parser.PrettyPrint
             scriptBuilder.Append("...");
         }
 
-        void GenerateLenExpression(LenExpression lenExpression)
+        void GenerateLenExpression(LengthExpression lenExpression)
         {
             scriptBuilder.Append("#");
             GenerateExpression(lenExpression.Identifier);
@@ -176,7 +188,7 @@ namespace Loom.Parser.PrettyPrint
             GenerateExpression(negativeExpression.Identifier);
         }
 
-        void GenerateExpression(Expression expression)
+        void GenerateExpression(Expression expression, string indent = "", string newLine = " ")
         {
             if(expression is ConstantExpression constantExpression)
             {
@@ -208,7 +220,7 @@ namespace Loom.Parser.PrettyPrint
             }
             if(expression is CallExpression functionCallExpression)
             {
-                GenerateCallExpression(functionCallExpression);
+                GenerateCallExpression(functionCallExpression, indent, newLine);
             }
             if(expression is IndexExpression indexExpression)
             {
@@ -216,7 +228,7 @@ namespace Loom.Parser.PrettyPrint
             }
             if(expression is FunctionDeclarationExpression functionDeclarationExpression)
             {
-                GenerateFunctionDeclarationExpression(functionDeclarationExpression);
+                GenerateFunctionDeclarationExpression(functionDeclarationExpression, indent, newLine);
             }
             if(expression is AssignmentExpression assignmentExpression)
             {
@@ -226,7 +238,7 @@ namespace Loom.Parser.PrettyPrint
             {
                 GenerateIfExpression(ifExpression);
             }
-            if(expression is LenExpression lenExpression)
+            if(expression is LengthExpression lenExpression)
             {
                 GenerateLenExpression(lenExpression);
             }
@@ -234,19 +246,23 @@ namespace Loom.Parser.PrettyPrint
             {
                 GenerateNegativeExpression(negativeExpression);
             }
+            if(expression is LogicalExpression logicalExpression)
+            {
+                GenerateLogicalExpression(logicalExpression);
+            }
         }
 
-        void GenerateExpressions(ExpressionList expressions)
+        void GenerateExpressions(ExpressionList expressions, string indent = "", string newLine = " ")
         {
             if(expressions.Count > 0)
             {
                 for (int i = 0; i < expressions.Count - 1; i++)
                 {
-                    GenerateExpression(expressions[i]);
+                    GenerateExpression(expressions[i], indent, newLine);
                     scriptBuilder.Append(", ");
                 }
 
-                GenerateExpression(expressions[expressions.Count - 1]);
+                GenerateExpression(expressions[expressions.Count - 1], indent, newLine);
             }
         }
 
@@ -255,7 +271,7 @@ namespace Loom.Parser.PrettyPrint
             if(statement is CallStatement callStatement)
             {
                 scriptBuilder.Append($"{indent + callStatement.Name}(");
-                GenerateExpressions(callStatement.Arguments);
+                GenerateExpressions(callStatement.Arguments, indent, PrinterSettings.NewLine);
                 scriptBuilder.Append(")");
                 return true;
             }
@@ -274,7 +290,7 @@ namespace Loom.Parser.PrettyPrint
                 if(assignmentStatement.Value != null)
                 {
                     scriptBuilder.Append(" = ");
-                    GenerateExpression(assignmentStatement.Value);
+                    GenerateExpression(assignmentStatement.Value, indent, PrinterSettings.NewLine);
                 }
                 return true;
             }
@@ -313,8 +329,8 @@ namespace Loom.Parser.PrettyPrint
             }
             if(statement is ReturnStatement returnStatement)
             {
-                scriptBuilder.Append("return ");
-                GenerateExpression(returnStatement.ReturnValue);
+                scriptBuilder.Append($"{indent}return ");
+                GenerateExpression(returnStatement.ReturnValue, indent, PrinterSettings.NewLine);
                 return true;
             }
 

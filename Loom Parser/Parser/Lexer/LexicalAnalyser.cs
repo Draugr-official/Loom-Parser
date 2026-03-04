@@ -117,6 +117,10 @@ namespace Loom.Parser.Lexer
                             if(Input[i + 1] == '.')
                             {
                                 kind = LexKind.Concat;
+                                if (Input[i + 2] == '.')
+                                {
+                                    kind = LexKind.Vararg;
+                                }
                             }
                             break;
                         }
@@ -186,6 +190,7 @@ namespace Loom.Parser.Lexer
 
                     case '\n':
                         Line++;
+                        kind = LexKind.NewLine;
                         break;
 
                     case '?':
@@ -207,22 +212,7 @@ namespace Loom.Parser.Lexer
                         }
                     case '-':
                         {
-                            if (Input.Length > i + 1 && Input[i + 1] == '-')
-                            {
-                                i += 2;
-                                for (; Input[i] != '\n' && i < Input.Length; i++)
-                                {
-                                    sb.Append(Input[i]);
-                                }
-                                value = sb.ToString();
-                                kind = LexKind.Comment;
-                                sb.Clear();
-                                Line++;
-                            }
-                            else
-                            {
-                                kind = LexKind.Sub;
-                            }
+                            kind = LexKind.Sub;
                             break;
                         }
                     case '*':

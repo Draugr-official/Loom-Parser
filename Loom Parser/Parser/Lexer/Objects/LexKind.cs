@@ -13,6 +13,11 @@ namespace Loom.Parser.Lexer.Objects
         Terminal,
 
         /// <summary>
+        /// E,g '\n'
+        /// </summary>
+        NewLine,
+
+        /// <summary>
         /// E'g '// Short comment'
         /// </summary>
         Comment,
@@ -180,6 +185,11 @@ namespace Loom.Parser.Lexer.Objects
         /// E.g '..'
         /// </summary>
         Concat,
+
+        /// <summary>
+        /// E.g '...'
+        /// </summary>
+        Vararg,
 
         /// <summary>
         /// E.g '#'

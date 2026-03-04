@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Loom.Parser.Lexer.Objects
 {
-    class LexToken
+    public class LexToken
     {
         /// <summary>
         /// Gets / sets the kind of the lex token

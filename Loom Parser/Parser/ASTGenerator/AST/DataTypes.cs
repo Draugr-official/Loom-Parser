@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loom.Parser.Lexer.Objects
+namespace Loom.Parser.ASTGenerator.AST
 {
-    public class LexTokenList : List<LexToken>
+    public enum DataTypes
     {
+        String,
+        Bool,
+        Number,
     }
 }

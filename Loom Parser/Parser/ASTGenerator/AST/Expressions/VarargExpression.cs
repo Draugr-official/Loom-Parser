@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loom.Parser.Lexer.Objects
+namespace Loom.Parser.ASTGenerator.AST.Expressions
 {
-    public class LexTokenList : List<LexToken>
+    internal class VarargExpression : Expression
     {
     }
 }
