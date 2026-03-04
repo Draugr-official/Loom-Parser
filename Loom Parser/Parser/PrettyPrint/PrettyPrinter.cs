@@ -1,13 +1,13 @@
-﻿using Loom_Parser.Parser.ASTGen.AST;
-using Loom_Parser.Parser.ASTGen.AST.Expressions;
-using Loom_Parser.Parser.ASTGen.AST.Statements;
+﻿using Loom.Parser.ASTGen.AST;
+using Loom.Parser.ASTGen.AST.Expressions;
+using Loom.Parser.ASTGen.AST.Statements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loom_Parser.Parser.PrettyPrint
+namespace Loom.Parser.PrettyPrint
 {
     /// <summary>
     /// Convert code from AST to its code representation

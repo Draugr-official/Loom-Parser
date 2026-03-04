@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{DADA5B84-024C-46A0-BEED-DBABD573EFC8}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Loom_Parser</RootNamespace>
-    <AssemblyName>Loom Parser</AssemblyName>
+    <RootNamespace>Loom</RootNamespace>
+    <AssemblyName>Loom</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

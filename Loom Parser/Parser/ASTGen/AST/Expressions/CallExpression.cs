@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loom_Parser.Parser.ASTGen.AST.Expressions
+namespace Loom.Parser.ASTGen.AST.Expressions
 {
     /// <summary>
     /// Declares a function call as an expression

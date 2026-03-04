@@ -1,4 +1,4 @@
-﻿using Loom_Parser.Parser.ASTGen.AST.Statements;
+﻿using Loom.Parser.ASTGen.AST.Statements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Loom_Parser.Parser.ASTGen.AST.Expressions
+namespace Loom.Parser.ASTGen.AST.Expressions
 {
     internal class FunctionDeclarationExpression : Expression
     {

@@ -1,10 +1,10 @@
-﻿using Loom_Parser.Parser.PrettyPrint;
-using Loom_Parser.Parser.Lexer;
-using Loom_Parser.Parser.ASTGen;
-using Loom_Parser.Parser.ASTGen.AST.Statements;
-using Loom_Parser.Parser.Lexer.Objects;
-using Loom_Parser.Parser.ASTGen.AST.Expressions;
-using Loom_Parser.Parser.ASTGen.AST;
+﻿using Loom.Parser.PrettyPrint;
+using Loom.Parser.Lexer;
+using Loom.Parser.ASTGen;
+using Loom.Parser.ASTGen.AST.Statements;
+using Loom.Parser.Lexer.Objects;
+using Loom.Parser.ASTGen.AST.Expressions;
+using Loom.Parser.ASTGen.AST;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loom_Parser
+namespace Loom
 {
     class Program
     {

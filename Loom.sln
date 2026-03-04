@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30717.126
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom Parser", "Loom Parser\Loom Parser.csproj", "{DADA5B84-024C-46A0-BEED-DBABD573EFC8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom", "Loom Parser\Loom.csproj", "{DADA5B84-024C-46A0-BEED-DBABD573EFC8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,11 +1,11 @@
-﻿using Loom_Parser.Parser.Lexer.Objects;
+﻿using Loom.Parser.Lexer.Objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loom_Parser.Parser.ASTGen
+namespace Loom.Parser.ASTGen
 {
     /// <summary>
     /// Generic token reader for the abstract syntax tree generator

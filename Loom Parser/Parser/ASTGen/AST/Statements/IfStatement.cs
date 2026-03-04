@@ -1,11 +1,11 @@
-﻿using Loom_Parser.Parser.ASTGen.AST.Expressions;
+﻿using Loom.Parser.ASTGen.AST.Expressions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loom_Parser.Parser.ASTGen.AST.Statements
+namespace Loom.Parser.ASTGen.AST.Statements
 {
     /// <summary>
     /// Lua if statement

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loom_Parser.Parser.PrettyPrint
+namespace Loom.Parser.PrettyPrint
 {
     internal class PrettyPrinterSettings
     {

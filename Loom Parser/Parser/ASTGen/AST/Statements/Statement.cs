@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loom_Parser.Parser.ASTGen.AST.Statements
+namespace Loom.Parser.ASTGen.AST.Statements
 {
     /// <summary>
     /// Statement superclass

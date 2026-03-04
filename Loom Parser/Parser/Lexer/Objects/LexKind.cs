@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loom_Parser.Parser.Lexer.Objects
+namespace Loom.Parser.Lexer.Objects
 {
     public enum LexKind
     {

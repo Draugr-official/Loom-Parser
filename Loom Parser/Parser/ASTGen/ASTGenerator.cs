@@ -1,14 +1,14 @@
-﻿using Loom_Parser.Parser.ASTGen.AST.Statements;
-using Loom_Parser.Parser.ASTGen.AST.Expressions;
-using Loom_Parser.Parser.Lexer.Objects;
+﻿using Loom.Parser.ASTGen.AST.Statements;
+using Loom.Parser.ASTGen.AST.Expressions;
+using Loom.Parser.Lexer.Objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Loom_Parser.Parser.ASTGen.AST;
+using Loom.Parser.ASTGen.AST;
 
-namespace Loom_Parser.Parser.ASTGen
+namespace Loom.Parser.ASTGen
 {
     /// <summary>
     /// Abstract syntax tree generator
