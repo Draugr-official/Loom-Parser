@@ -9,7 +9,7 @@ namespace Loom_Parser.Parser.ASTGen.AST.Expressions
     /// <summary>
     /// Defines a binary expression (e.g '3 + 4', '6 * 8'
     /// </summary>
-    class BinaryExpression : Expression
+    class ArithmeticExpression : Expression
     {
         /// <summary>
         /// Left hand operand
@@ -24,13 +24,13 @@ namespace Loom_Parser.Parser.ASTGen.AST.Expressions
         /// <summary>
         /// The operator between each operand
         /// </summary>
-        public BinaryOperators Operator { get; set; }
+        public ArithmeticOperators Operator { get; set; }
     }
 
     /// <summary>
-    /// An enumerator containing all binary operators
+    /// An enumerator containing all arithmetic operators
     /// </summary>
-    public enum BinaryOperators
+    public enum ArithmeticOperators
     {
         Unknown,
 

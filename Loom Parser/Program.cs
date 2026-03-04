@@ -24,7 +24,7 @@ namespace Loom_Parser
             LexTokenList lexTokens = codeLexer.Analyze();
 
             ASTGenerator astGenerator = new ASTGenerator(lexTokens);
-            StatementList statements = astGenerator.ParseStatements(new CallStatement());
+            StatementList statements = astGenerator.ParseStatements();
 
             
 
@@ -62,7 +62,7 @@ namespace Loom_Parser
             //    Arguments = { new VariableExpression() { Name = "getter" } }
             //});
 
-            PrettyPrinter prettyPrinter = new PrettyPrinter(PrettyPrinterSettings.Beautify);
+            PrettyPrinter prettyPrinter = new PrettyPrinter(PrettyPrinterSettings.Minify);
 
             Console.WriteLine("Amount of statements; " + statements.Count.ToString());
             Console.WriteLine("Original;");

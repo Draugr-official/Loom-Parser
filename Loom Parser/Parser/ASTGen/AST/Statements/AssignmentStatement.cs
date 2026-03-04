@@ -10,7 +10,7 @@ namespace Loom_Parser.Parser.ASTGen.AST.Statements
     /// <summary>
     /// Variable assigning statement | local a = "b" 
     /// </summary>
-    class VariableAssignStatement : Statement
+    class AssignmentStatement : Statement
     {
         /// <summary>
         /// Determines if the variable is localized to a scope
@@ -33,7 +33,7 @@ namespace Loom_Parser.Parser.ASTGen.AST.Statements
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <param name="isLocal"></param>
-        public VariableAssignStatement(string name, Expression value, bool isLocal)
+        public AssignmentStatement(string name, Expression value, bool isLocal)
         {
             this.Name = name;
             this.Value = value;
@@ -43,7 +43,7 @@ namespace Loom_Parser.Parser.ASTGen.AST.Statements
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public VariableAssignStatement()
+        public AssignmentStatement()
         {
             this.IsLocal = false;
             this.Name = "";
