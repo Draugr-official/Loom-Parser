@@ -417,13 +417,13 @@ namespace Loom.Parser.ASTGen
 
             // The rest
 
-            if (ParseArrayExpression(out ArrayExpression tableExpression))
-            {
-                expression = tableExpression;
-            }
             if (ParseIdentifierExpression(out IdentifierExpression identifierExpression))
             {
                 expression = identifierExpression;
+            }
+            if (ParseArrayExpression(out ArrayExpression tableExpression))
+            {
+                expression = tableExpression;
             }
             
 

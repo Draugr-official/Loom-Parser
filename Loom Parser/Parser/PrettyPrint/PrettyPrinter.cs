@@ -299,7 +299,7 @@ namespace Loom.Parser.PrettyPrint
                     GenerateStatements(ifStatement.ElseStatements, indent + PrinterSettings.Indentation, PrinterSettings.NewLine);
                 }
 
-                scriptBuilder.Append("end");
+                scriptBuilder.Append($"{indent}end");
                 return true;
             }
             if (statement is WhileStatement whileStatement)
