@@ -182,6 +182,11 @@ namespace Loom.Parser.Lexer.Objects
         Concat,
 
         /// <summary>
+        /// E.g '#'
+        /// </summary>
+        Hashtag,
+
+        /// <summary>
         /// End of file
         /// </summary>
         EOF

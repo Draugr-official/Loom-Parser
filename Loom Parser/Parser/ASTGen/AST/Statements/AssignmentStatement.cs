@@ -47,7 +47,7 @@ namespace Loom.Parser.ASTGen.AST.Statements
         {
             this.IsLocal = false;
             this.Name = "";
-            this.Value = new Expression();
+            this.Value = null;
         }
     }
 }

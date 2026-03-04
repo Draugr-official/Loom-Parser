@@ -62,7 +62,7 @@ namespace Loom
             //    Arguments = { new VariableExpression() { Name = "getter" } }
             //});
 
-            PrettyPrinter prettyPrinter = new PrettyPrinter(PrettyPrinterSettings.Minify);
+            PrettyPrinter prettyPrinter = new PrettyPrinter(PrettyPrinterSettings.Beautify);
 
             Console.WriteLine("Amount of statements; " + statements.Count.ToString());
             Console.WriteLine("Original;");

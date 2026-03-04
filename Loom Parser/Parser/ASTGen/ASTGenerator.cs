@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Loom.Parser.ASTGen.AST;
+using System.Runtime.InteropServices;
 
 namespace Loom.Parser.ASTGen
 {
@@ -158,6 +159,16 @@ namespace Loom.Parser.ASTGen
                 case LexKind.ChevronOpen:
                 case LexKind.ChevronClose:
                     {
+                        switch (tokenReader.Peek().Kind)
+                        {
+                            case LexKind.Equals: relationalExpression.Operator = RelationalOperators.EqualTo; break;
+                            case LexKind.NotEqualTo: relationalExpression.Operator = RelationalOperators.NotEqualTo; break;
+                            case LexKind.BiggerOrEqual: relationalExpression.Operator = RelationalOperators.BiggerOrEqual; break;
+                            case LexKind.SmallerOrEqual: relationalExpression.Operator = RelationalOperators.SmallerOrEqual; break;
+                            case LexKind.ChevronOpen: relationalExpression.Operator = RelationalOperators.SmallerThan; break;
+                            case LexKind.ChevronClose: relationalExpression.Operator = RelationalOperators.BiggerThan; break;
+                        }
+
                         tokenReader.Skip(1);
                         if (ParseExpression(out Expression right))
                         {
@@ -273,27 +284,148 @@ namespace Loom.Parser.ASTGen
             return false;
         }
 
+        bool ParseIfExpression(out IfExpression ifExpression)
+        {
+            ifExpression = new IfExpression();
+
+            if (tokenReader.Expect(LexKind.Keyword, "if"))
+            {
+                tokenReader.Skip(1);
+                if (ParseExpression(out Expression condition))
+                {
+                    ifExpression.Condition = condition;
+                    if (tokenReader.Expect(LexKind.Keyword, "then"))
+                    {
+                        tokenReader.Skip(1);
+                        if(ParseExpression(out Expression expression))
+                        {
+                            ifExpression.Body = expression;
+                        }
+
+                        for (; ; )
+                        {
+                            if (tokenReader.Expect(LexKind.Keyword, "elseif"))
+                            {
+                                tokenReader.Skip(1);
+                                IfExpression elseIfExpression = new IfExpression();
+
+                                if (ParseExpression(out Expression elseIfConditionExpression))
+                                {
+                                    elseIfExpression.Condition = elseIfConditionExpression;
+                                    if (tokenReader.Expect(LexKind.Keyword, "then"))
+                                    {
+                                        tokenReader.Skip(1);
+                                        if (ParseExpression(out Expression elseIfBodyExpression))
+                                        {
+                                            elseIfExpression.Body = elseIfBodyExpression;
+                                            ifExpression.ElseIfExpressions.Add(elseIfExpression);
+                                        }
+                                    }
+                                }
+                                continue;
+                            }
+
+                            if (tokenReader.Expect(LexKind.Keyword, "else"))
+                            {
+                                tokenReader.Skip(1);
+                                if(ParseExpression(out Expression elseExpression))
+                                {
+                                    ifExpression.ElseExpression = elseExpression;
+                                }
+                                continue;
+                            }
+
+                            break;
+                        }
+
+
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        bool ParseVarargExpression(out VarargExpression varargExpression)
+        {
+            varargExpression = new VarargExpression();
+
+            if(tokenReader.Expect(LexKind.Dot)
+                && tokenReader.Expect(LexKind.Dot, 1)
+                && tokenReader.Expect(LexKind.Dot, 2))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        bool ParseLenExpression(out LenExpression lenExpression)
+        {
+            lenExpression = new LenExpression();
+
+            if (tokenReader.Expect(LexKind.Hashtag))
+            {
+                tokenReader.Skip(1);
+                if (ParseExpression(out Expression expression))
+                {
+                    lenExpression.Identifier = expression;
+                    return true;
+                }
+
+                throw new Exception("Len expression missing identifier");
+            }
+
+            return false;
+        }
+        bool ParseNegativeExpression(out NegativeExpression negativeExpression)
+        {
+            negativeExpression = new NegativeExpression();
+
+            if (tokenReader.Expect(LexKind.Sub))
+            {
+                tokenReader.Skip(1);
+                if (ParseExpression(out Expression expression))
+                {
+                    negativeExpression.Identifier = expression;
+                    return true;
+                }
+
+                throw new Exception("Negative expression missing identifier");
+            }
+
+            return false;
+        }
+
         bool ParseExpression(out Expression expression)
         {
             expression = null;
 
+            // Expressions that can not be directly included in another expression without modifying it
+            if (ParseIfExpression(out IfExpression ifExpression))
+            {
+                expression = ifExpression;
+                return true;
+            }
+
             if (ParseFunctionDeclarationExpression(out FunctionDeclarationExpression functionDeclarationExpression))
             {
                 expression = functionDeclarationExpression;
+                return true;
             }
+
+            // The rest
 
             if (ParseArrayExpression(out ArrayExpression tableExpression))
             {
                 expression = tableExpression;
             }
-            if (ParseConstantExpression(out ConstantExpression constantExpression))
-            {
-                expression = constantExpression;
-            }
             if (ParseIdentifierExpression(out IdentifierExpression identifierExpression))
             {
                 expression = identifierExpression;
             }
+            
 
             // Expression with left side expressions
             if (ParseIndexExpression(expression, out IndexExpression indexExpression))
@@ -304,6 +436,23 @@ namespace Loom.Parser.ASTGen
             if (ParseCallExpression(expression, out CallExpression callExpression))
             {
                 expression = callExpression;
+            }
+
+            if (ParseVarargExpression(out VarargExpression varargExpression))
+            {
+                expression = varargExpression;
+            }
+            if (ParseLenExpression(out LenExpression lenExpression))
+            {
+                expression = lenExpression;
+            }
+            if (ParseConstantExpression(out ConstantExpression constantExpression))
+            {
+                expression = constantExpression;
+            }
+            if(ParseNegativeExpression(out NegativeExpression negativeExpression))
+            {
+                expression = negativeExpression;
             }
 
             // Expressions with left and right side expressions
@@ -413,7 +562,39 @@ namespace Loom.Parser.ASTGen
                     {
                         tokenReader.Skip(1);
                         ifStatement.Body = ParseStatements();
-                        if(tokenReader.Expect(LexKind.Keyword, "end"))
+
+                        for (; ; )
+                        {
+                            if (tokenReader.Expect(LexKind.Keyword, "elseif"))
+                            {
+                                tokenReader.Skip(1);
+                                IfStatement elseIfStatement = new IfStatement();
+
+                                if (ParseExpression(out Expression elseIfExpression))
+                                {
+                                    elseIfStatement.Condition = elseIfExpression;
+                                    if (tokenReader.Expect(LexKind.Keyword, "then"))
+                                    {
+                                        tokenReader.Skip(1);
+                                        elseIfStatement.Body = ParseStatements();
+                                        ifStatement.ElseIfStatements.Add(elseIfStatement);
+                                    }
+                                }
+                                continue;
+                            }
+
+                            if (tokenReader.Expect(LexKind.Keyword, "else"))
+                            {
+                                tokenReader.Skip(1);
+                                ifStatement.ElseStatements = ParseStatements();
+                                continue;
+                            }
+
+                            break;
+                        }
+
+
+                        if (tokenReader.Expect(LexKind.Keyword, "end"))
                         {
                             tokenReader.Skip(1);
                             return true;
@@ -425,6 +606,7 @@ namespace Loom.Parser.ASTGen
             return false;
         }
 
+        // TODO: Seperate assignment statement from declaration statement (local statement)
         bool ParseAssignmentStatement(out AssignmentStatement assignmentStatement)
         {
             assignmentStatement = new AssignmentStatement();
@@ -440,6 +622,7 @@ namespace Loom.Parser.ASTGen
             if (tokenReader.Expect(LexKind.Identifier, localOffset))
             {
                 assignmentStatement.Name = tokenReader.Peek(localOffset).Value;
+
                 if(tokenReader.Expect(LexKind.Equals, 1 + localOffset))
                 {
                     tokenReader.Skip(2 + localOffset);
@@ -449,6 +632,12 @@ namespace Loom.Parser.ASTGen
 
                         return true;
                     }
+                }
+
+                if(assignmentStatement.IsLocal)
+                {
+                    tokenReader.Skip(2);
+                    return true;
                 }
             }
 

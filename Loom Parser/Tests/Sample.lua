@@ -1,5 +1,9 @@
-﻿local s = setmetatable local u = table.unpack
-local b = {"hello"}
-local t = s(b, {__call = function(t, v) return _G[v](u(t)) end})
-
-local a = t("print")
+﻿local score1 = 50
+local score2 = 60
+local winner
+if score1 > score2 then
+        winner = 'Player 1'
+else
+        winner = 'Player 2'
+end
+print(winner)

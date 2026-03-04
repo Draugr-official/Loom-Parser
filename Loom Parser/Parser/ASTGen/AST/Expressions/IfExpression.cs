@@ -1,16 +1,16 @@
-﻿using Loom.Parser.ASTGen.AST.Expressions;
+﻿using Loom.Parser.ASTGen.AST.Statements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loom.Parser.ASTGen.AST.Statements
+namespace Loom.Parser.ASTGen.AST.Expressions
 {
     /// <summary>
     /// Lua if statement
     /// </summary>
-    internal class IfStatement : Statement
+    internal class IfExpression : Expression
     {
         /// <summary>
         /// The condition of the if statement
@@ -20,24 +20,24 @@ namespace Loom.Parser.ASTGen.AST.Statements
         /// <summary>
         /// The body of the if statement
         /// </summary>
-        public StatementList Body { get; set; }
+        public Expression Body { get; set; }
 
         /// <summary>
         /// Nested else if statements in the conditional
         /// </summary>
-        public List<IfStatement> ElseIfStatements { get; set; }
+        public List<IfExpression> ElseIfExpressions { get; set; }
 
         /// <summary>
         /// Else statements in the conditional
         /// </summary>
-        public StatementList ElseStatements { get; set; }
+        public Expression ElseExpression { get; set; }
 
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
         /// <param name="condition"></param>
         /// <param name="body"></param>
-        public IfStatement(Expression condition, StatementList body)
+        public IfExpression(Expression condition, Expression body)
         {
             this.Condition = condition;
             this.Body = body;
@@ -46,12 +46,12 @@ namespace Loom.Parser.ASTGen.AST.Statements
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public IfStatement()
+        public IfExpression()
         {
             this.Condition = new Expression();
-            this.Body = new StatementList();
-            this.ElseIfStatements = new List<IfStatement>();
-            this.ElseStatements = new StatementList();
+            this.Body = new Expression();
+            this.ElseIfExpressions = new List<IfExpression>();
+            this.ElseExpression = null;
         }
     }
 }

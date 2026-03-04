@@ -107,11 +107,10 @@ namespace Loom.Parser.PrettyPrint
             if (constantExpression.Type == DataTypes.String)
             {
                 scriptBuilder.Append($"'{constantExpression.Value}'");
+                return;
             }
-            else
-            {
-                scriptBuilder.Append(constantExpression.Value);
-            }
+
+            scriptBuilder.Append(constantExpression.Value);
         }
         void GenerateCallExpression(CallExpression callExpression)
         {
@@ -137,6 +136,46 @@ namespace Loom.Parser.PrettyPrint
             GenerateExpression(assignmentExpression.Value);
         }
 
+        void GenerateIfExpression(IfExpression ifExpression)
+        {
+            scriptBuilder.Append($"if ");
+            GenerateExpression(ifExpression.Condition);
+            scriptBuilder.Append($" then ");
+            GenerateExpression(ifExpression.Body);
+
+            foreach (IfExpression elseIfExpression in ifExpression.ElseIfExpressions)
+            {
+                scriptBuilder.Append($" elseif ");
+                GenerateExpression(elseIfExpression.Condition);
+                scriptBuilder.Append($" then ");
+                GenerateExpression(elseIfExpression.Body);
+            }
+
+            if (ifExpression.ElseExpression != null)
+            {
+                scriptBuilder.Append($" else ");
+                GenerateExpression(ifExpression.ElseExpression);
+            }
+
+            scriptBuilder.Append(" end");
+        }
+
+        void GenerateVarargExpression(VarargExpression varargExpression)
+        {
+            scriptBuilder.Append("...");
+        }
+
+        void GenerateLenExpression(LenExpression lenExpression)
+        {
+            scriptBuilder.Append("#");
+            GenerateExpression(lenExpression.Identifier);
+        }
+        void GenerateNegativeExpression(NegativeExpression negativeExpression)
+        {
+            scriptBuilder.Append("-");
+            GenerateExpression(negativeExpression.Identifier);
+        }
+
         void GenerateExpression(Expression expression)
         {
             if(expression is ConstantExpression constantExpression)
@@ -146,6 +185,10 @@ namespace Loom.Parser.PrettyPrint
             if(expression is IdentifierExpression variableExpression)
             {
                 GenerateIdentifierExpression(variableExpression);
+            }
+            if(expression is VarargExpression varargExpression)
+            {
+                GenerateVarargExpression(varargExpression);
             }
             if(expression is RelationalExpression relationalExpression)
             {
@@ -178,6 +221,18 @@ namespace Loom.Parser.PrettyPrint
             if(expression is AssignmentExpression assignmentExpression)
             {
                 GenerateAssignmentExpression(assignmentExpression);
+            }
+            if(expression is IfExpression ifExpression)
+            {
+                GenerateIfExpression(ifExpression);
+            }
+            if(expression is LenExpression lenExpression)
+            {
+                GenerateLenExpression(lenExpression);
+            }
+            if(expression is NegativeExpression negativeExpression)
+            {
+                GenerateNegativeExpression(negativeExpression);
             }
         }
 
@@ -215,8 +270,12 @@ namespace Loom.Parser.PrettyPrint
             }
             if(statement is AssignmentStatement assignmentStatement)
             {
-                scriptBuilder.Append($"{indent + (assignmentStatement.IsLocal ? "local " : "") + assignmentStatement.Name} = ");
-                GenerateExpression(assignmentStatement.Value);
+                scriptBuilder.Append($"{indent + (assignmentStatement.IsLocal ? "local " : "") + assignmentStatement.Name}");
+                if(assignmentStatement.Value != null)
+                {
+                    scriptBuilder.Append(" = ");
+                    GenerateExpression(assignmentStatement.Value);
+                }
                 return true;
             }
             if(statement is IfStatement ifStatement)
@@ -225,6 +284,21 @@ namespace Loom.Parser.PrettyPrint
                 GenerateExpression(ifStatement.Condition);
                 scriptBuilder.Append($" then{PrinterSettings.NewLine}");
                 GenerateStatements(ifStatement.Body, indent + PrinterSettings.Indentation, PrinterSettings.NewLine);
+
+                foreach(IfStatement elseIfStatement in ifStatement.ElseIfStatements)
+                {
+                    scriptBuilder.Append($"{indent}elseif ");
+                    GenerateExpression(elseIfStatement.Condition);
+                    scriptBuilder.Append($" then{PrinterSettings.NewLine}");
+                    GenerateStatements(elseIfStatement.Body, indent + PrinterSettings.Indentation, PrinterSettings.NewLine);
+                }
+
+                if(ifStatement.ElseStatements.Count > 0)
+                {
+                    scriptBuilder.Append($"{indent}else{PrinterSettings.NewLine}");
+                    GenerateStatements(ifStatement.ElseStatements, indent + PrinterSettings.Indentation, PrinterSettings.NewLine);
+                }
+
                 scriptBuilder.Append("end");
                 return true;
             }

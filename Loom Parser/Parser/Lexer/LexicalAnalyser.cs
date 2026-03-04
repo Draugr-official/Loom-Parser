@@ -106,6 +106,7 @@ namespace Loom.Parser.Lexer
                             break;
                         }
 
+                    case '#': kind = LexKind.Hashtag; break;
 
                     case ';': kind = LexKind.Semicolon; break;
 
