@@ -25,13 +25,8 @@ namespace Loom
             LexicalAnalyser codeLexer = new LexicalAnalyser(script);
             LexTokenList lexTokens = codeLexer.Analyze();
 
-            lexTokens.ForEach(t => Console.WriteLine(t.Kind + ", " + t.Value));
-
             Preprocessor preProcessor = new Preprocessor(lexTokens);
             lexTokens = preProcessor.Process();
-
-
-            lexTokens.ForEach(t => Console.WriteLine("Preprocessed: " + t.Kind + ", " + t.Value));
 
             ASTGenerator astGenerator = new ASTGenerator(lexTokens);
             StatementList statements = astGenerator.ParseStatements();

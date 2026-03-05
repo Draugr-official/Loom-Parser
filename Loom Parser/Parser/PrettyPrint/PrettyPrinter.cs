@@ -143,8 +143,9 @@ namespace Loom.Parser.PrettyPrint
             scriptBuilder.Append($"{indent}end");
         }
 
-        void GenerateAssignmentExpression(AssignmentExpression assignmentExpression)
+        void GenerateAssignmentExpression(AssignmentExpression assignmentExpression, string indent = "")
         {
+            scriptBuilder.Append(indent);
             GenerateExpression(assignmentExpression.Variable);
             scriptBuilder.Append(" = ");
             GenerateExpression(assignmentExpression.Value);

@@ -441,6 +441,14 @@ namespace Loom.Parser.ASTGenerator
                 return true;
             }
 
+            if (ParseNegativeExpression(out NegativeExpression negativeExpression))
+            {
+                expression = negativeExpression;
+            }
+            if (ParseLengthExpression(out LengthExpression lengthExpression))
+            {
+                expression = lengthExpression;
+            }
             // The rest
 
             if (ParseIdentifierExpression(out IdentifierExpression identifierExpression))
@@ -468,17 +476,9 @@ namespace Loom.Parser.ASTGenerator
             {
                 expression = varargExpression;
             }
-            if (ParseLengthExpression(out LengthExpression lengthExpression))
-            {
-                expression = lengthExpression;
-            }
             if (ParseConstantExpression(out ConstantExpression constantExpression))
             {
                 expression = constantExpression;
-            }
-            if(ParseNegativeExpression(out NegativeExpression negativeExpression))
-            {
-                expression = negativeExpression;
             }
 
             // Expressions with left and right side expressions
@@ -678,14 +678,17 @@ namespace Loom.Parser.ASTGenerator
         {
             functionDeclarationStatement = new FunctionDeclarationStatement();
 
-            if(tokenReader.Expect(LexKind.Keyword, "local"))
+            int localOffset = 0;
+
+            if (tokenReader.Expect(LexKind.Keyword, "local"))
             {
                 functionDeclarationStatement.IsLocal = true;
+                localOffset = 1;
             }
 
-            if (tokenReader.Expect(LexKind.Keyword) && tokenReader.Peek().Value == "function")
+            if (tokenReader.Expect(LexKind.Keyword, localOffset) && tokenReader.Peek(localOffset).Value == "function")
             {
-                tokenReader.Skip(functionDeclarationStatement.IsLocal ? 2 : 1);
+                tokenReader.Skip(localOffset + 1);
 
                 if (ParseIdentifierExpression(out IdentifierExpression identifierExpression))
                 {
