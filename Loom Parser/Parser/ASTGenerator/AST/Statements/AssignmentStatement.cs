@@ -20,7 +20,7 @@ namespace Loom.Parser.ASTGenerator.AST.Statements
         /// <summary>
         /// The name of the variable being declared
         /// </summary>
-        public string Name { get; set; }
+        public Expression Variable { get; set; }
 
         /// <summary>
         /// The value being assigned to the variable
@@ -30,23 +30,9 @@ namespace Loom.Parser.ASTGenerator.AST.Statements
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        /// <param name="isLocal"></param>
-        public AssignmentStatement(string name, Expression value, bool isLocal)
-        {
-            this.Name = name;
-            this.Value = value;
-            this.IsLocal = isLocal;
-        }
-
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
         public AssignmentStatement()
         {
             this.IsLocal = false;
-            this.Name = "";
             this.Value = null;
         }
     }

@@ -15,7 +15,7 @@ namespace Loom.Parser.ASTGenerator.AST.Statements
         /// <summary>
         /// The name of the function being called to
         /// </summary>
-        public string Name { get; set; }
+        public Expression Function { get; set; }
 
         /// <summary>
         /// The arguments of the function being called to
@@ -25,27 +25,8 @@ namespace Loom.Parser.ASTGenerator.AST.Statements
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="arguments"></param>
-        public CallStatement(string name, ExpressionList arguments = null)
-        {
-            this.Name = name;
-            if(arguments == null)
-            {
-                this.Arguments = new ExpressionList();
-            }
-            else
-            {
-                this.Arguments = arguments;
-            }
-        }
-        
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
         public CallStatement()
         {
-            this.Name = "";
             this.Arguments = new ExpressionList();
         }
     }
