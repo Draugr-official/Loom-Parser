@@ -152,9 +152,9 @@ namespace Loom.Parser.PrettyPrint
         void GenerateAssignmentExpression(AssignmentExpression assignmentExpression, string indent = "")
         {
             scriptBuilder.Append(indent);
-            GenerateExpression(assignmentExpression.Variable);
+            GenerateExpressions(assignmentExpression.Variables);
             scriptBuilder.Append(" = ");
-            GenerateExpression(assignmentExpression.Value);
+            GenerateExpressions(assignmentExpression.Values);
         }
 
         void GenerateIfExpression(IfExpression ifExpression)
@@ -307,13 +307,10 @@ namespace Loom.Parser.PrettyPrint
             }
             if(statement is AssignmentStatement assignmentStatement)
             {
-                scriptBuilder.Append($"{indent + (assignmentStatement.IsLocal ? "local " : "")}");
-                GenerateExpression(assignmentStatement.Variable);
-                if(assignmentStatement.Value != null)
-                {
-                    scriptBuilder.Append(" = ");
-                    GenerateExpression(assignmentStatement.Value, indent, PrinterSettings.NewLine);
-                }
+                scriptBuilder.Append($"{indent}");
+                GenerateExpressions(assignmentStatement.Variables);
+                scriptBuilder.Append(" = ");
+                GenerateExpressions(assignmentStatement.Values);
                 return true;
             }
             if(statement is IfStatement ifStatement)
@@ -423,7 +420,7 @@ namespace Loom.Parser.PrettyPrint
             if(statement is LocalDeclarationStatement localDeclarationStatement)
             {
                 scriptBuilder.Append($"{indent}local ");
-                GenerateExpression(localDeclarationStatement.Expression, indent, PrinterSettings.NewLine);
+                GenerateStatement(localDeclarationStatement.Statement, indent);
                 return true;
             }
 

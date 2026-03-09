@@ -9,6 +9,6 @@ namespace Loom.Parser.ASTGenerator.AST.Statements
 {
     internal class LocalDeclarationStatement : Statement
     {
-        public Expression Expression { get; set; }
+        public Statement Statement { get; set; }
     }
 }

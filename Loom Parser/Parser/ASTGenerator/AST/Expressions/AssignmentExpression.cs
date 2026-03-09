@@ -11,20 +11,20 @@ namespace Loom.Parser.ASTGenerator.AST.Expressions
         /// <summary>
         /// The name of the variable being declared
         /// </summary>
-        public Expression Variable { get; set; }
+        public ExpressionList Variables { get; set; }
 
         /// <summary>
         /// The value being assigned to the variable
         /// </summary>
-        public Expression Value { get; set; }
+        public ExpressionList Values { get; set; }
 
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
         public AssignmentExpression()
         {
-            this.Variable = new Expression();
-            this.Value = new Expression();
+            this.Variables = new ExpressionList();
+            this.Values = new ExpressionList();
         }
     }
 }

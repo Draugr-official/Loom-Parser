@@ -63,7 +63,17 @@ namespace Loom.Parser.ASTGenerator
             if(tokenReader.Expect(LexKind.BraceOpen))
             {
                 tokenReader.Skip(1);
-                arrayExpression.Array = ParseExpressions();
+
+                Console.WriteLine("Yep!");
+                if(tokenReader.Expect(LexKind.BraceClose))
+                {
+                    Console.WriteLine("Ok!");
+                    tokenReader.Skip(1);
+                    return true;
+                }
+                Console.WriteLine("Nop!");
+
+                arrayExpression.Array = ParseExpressions(true);
 
                 if (tokenReader.ExpectFatal(LexKind.BraceClose))
                 {
@@ -82,17 +92,13 @@ namespace Loom.Parser.ASTGenerator
 
             if (tokenReader.Expect(LexKind.ParentheseOpen))
             {
-                Console.WriteLine("1 " + tokenReader.Peek().Line + ": " + tokenReader.Peek().Kind + ", " + tokenReader.Peek().Value);
                 tokenReader.Skip(1);
 
-                Console.WriteLine("2---- " + tokenReader.Peek().Line + ": " + tokenReader.Peek().Kind + ", " + tokenReader.Peek().Value);
                 callExpression.Arguments = ParseExpressions();
-                Console.WriteLine("4----------------- " + tokenReader.Peek().Line + ": " + tokenReader.Peek().Kind + ", " + tokenReader.Peek().Value);
 
                 if (tokenReader.ExpectFatal(LexKind.ParentheseClose))
                 {
                     tokenReader.Skip(1);
-                    Console.WriteLine("5----------------------------------- " + tokenReader.Peek().Line + ": " + tokenReader.Peek().Kind + ", " + tokenReader.Peek().Value);
                     return true;
                 }
             }
@@ -299,7 +305,8 @@ namespace Loom.Parser.ASTGenerator
         bool ParseAssignmentExpression(Expression left, out AssignmentExpression assignmentExpression)
         {
             assignmentExpression = new AssignmentExpression();
-            assignmentExpression.Variable = left;
+            assignmentExpression.Variables.Add(left);
+
 
             switch (tokenReader.Peek().Kind)
             {
@@ -308,12 +315,14 @@ namespace Loom.Parser.ASTGenerator
                         tokenReader.Skip(1);
                         if (ParseExpression(out Expression right))
                         {
-                            assignmentExpression.Value = right;
+                            assignmentExpression.Values.Add(right);
                             return true;
                         }
                         break;
                     }
             }
+
+
 
             return false;
         }
@@ -505,6 +514,36 @@ namespace Loom.Parser.ASTGenerator
             return true;
         }
 
+        bool ParseFunctionExpressions(out ExpressionList expressionList)
+        {
+            expressionList = new ExpressionList();
+
+            for (; ; )
+            {
+                if (ParseFunctionExpression(null, out Expression expression))
+                {
+                    expressionList.Add(expression);
+                }
+
+                if (tokenReader.Expect(LexKind.Comma))
+                {
+                    tokenReader.Skip(1);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if(expressionList.Count == 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        // Unused as of now
         bool ParseVariableExpression(Expression leftExpression, out Expression expression)
         {
             expression = leftExpression;
@@ -528,7 +567,36 @@ namespace Loom.Parser.ASTGenerator
             return true;
         }
 
-        bool ParseExpression(out Expression expression)
+        bool ParseVariableExpressions(out ExpressionList expressionList)
+        {
+            expressionList = new ExpressionList();
+
+            for (; ; )
+            {
+                if (ParseVariableExpression(null, out Expression expression))
+                {
+                    expressionList.Add(expression);
+                }
+
+                if (tokenReader.Expect(LexKind.Comma))
+                {
+                    tokenReader.Skip(1);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (expressionList.Count == 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        bool ParseExpression(out Expression expression, bool parsingArray = false)
         {
             expression = null;
 
@@ -556,10 +624,6 @@ namespace Loom.Parser.ASTGenerator
             {
                 expression = nilExpression;
             }
-            if (ParseArrayExpression(out ArrayExpression tableExpression))
-            {
-                expression = tableExpression;
-            }
 
 
             // Expression with left side expressions
@@ -574,11 +638,6 @@ namespace Loom.Parser.ASTGenerator
                 expression = identifierExpression;
             }
 
-            if (ParseIndexExpression(expression, out IndexExpression indexExpression))
-            {
-                expression = indexExpression;
-            }
-
             if (ParseVarargExpression(out VarargExpression varargExpression))
             {
                 expression = varargExpression;
@@ -588,10 +647,20 @@ namespace Loom.Parser.ASTGenerator
                 expression = constantExpression;
             }
 
+            if (ParseArrayExpression(out ArrayExpression tableExpression))
+            {
+                Console.WriteLine("Hvor er fu");
+                expression = tableExpression;
+            }
 
             if (ParseCallExpression(expression, out CallExpression callExpression))
             {
                 expression = callExpression;
+            }
+
+            if (ParseIndexExpression(expression, out IndexExpression indexExpression))
+            {
+                expression = indexExpression;
             }
 
             // Expressions with left and right side expressions
@@ -615,7 +684,7 @@ namespace Loom.Parser.ASTGenerator
                 expression = concatExpression;
             }
 
-            if(ParseAssignmentExpression(expression, out AssignmentExpression assignmentExpression))
+            if(parsingArray && ParseAssignmentExpression(expression, out AssignmentExpression assignmentExpression))
             {
                 expression = assignmentExpression;
             }
@@ -623,15 +692,19 @@ namespace Loom.Parser.ASTGenerator
             return expression != null;
         }
 
-        ExpressionList ParseExpressions()
+        ExpressionList ParseExpressions(bool parsingArray = false)
         {
             ExpressionList expressionList = new ExpressionList();
 
             for(; ; )
             {
-                if (ParseExpression(out Expression expression))
+                if (ParseExpression(out Expression expression, parsingArray))
                 {
                     expressionList.Add(expression);
+                }
+                else
+                {
+                    break;
                 }
 
                 if (tokenReader.Expect(LexKind.Comma))
@@ -1011,49 +1084,22 @@ namespace Loom.Parser.ASTGenerator
 
         // TODO: Seperate assignment statement from declaration statement (local statement)
         // TODO: Multiple declaration statement
-        bool ParseAssignmentStatement(Expression varExpression, out AssignmentStatement assignmentStatement)
+        bool ParseAssignmentStatement(ExpressionList varExpressions, out AssignmentStatement assignmentStatement)
         {
             assignmentStatement = new AssignmentStatement();
 
-
-            if(varExpression == null)
+            assignmentStatement.Variables = varExpressions;
+            if (tokenReader.Expect(LexKind.Equals))
             {
-                if (tokenReader.Expect(LexKind.Keyword, "local"))
+                tokenReader.Skip(1);
+                assignmentStatement.Values = ParseExpressions();
+
+                if(assignmentStatement.Values.Count == 0)
                 {
-                    assignmentStatement.IsLocal = true;
-                    tokenReader.Skip(1);
+                    throw new Exception("Assignment statement contains no values");
                 }
 
-                if (ParseVariableExpression(null, out Expression variableExpression))
-                {
-                    assignmentStatement.Variable = variableExpression;
-
-                    if (tokenReader.Expect(LexKind.Equals))
-                    {
-                        tokenReader.Skip(1);
-                        if (ParseExpression(out Expression value))
-                        {
-                            assignmentStatement.Value = value;
-
-                            return true;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                assignmentStatement.Variable = varExpression;
-
-                if (tokenReader.Expect(LexKind.Equals))
-                {
-                    tokenReader.Skip(1);
-                    if (ParseExpression(out Expression value))
-                    {
-                        assignmentStatement.Value = value;
-
-                        return true;
-                    }
-                }
+                return true;
             }
 
             return false;
@@ -1068,22 +1114,25 @@ namespace Loom.Parser.ASTGenerator
                 if(tokenReader.Expect(LexKind.Identifier, 1))
                 {
                     tokenReader.Skip(1);
-                    if(ParseIdentifierExpression(out IdentifierExpression identifierExpression))
+
+                    if(ParseVariableExpressions(out ExpressionList expressionList))
                     {
-                        if (ParseAssignmentExpression(identifierExpression, out AssignmentExpression assignmentExpression))
+                        if (ParseAssignmentStatement(expressionList, out AssignmentStatement assignmentStatement))
                         {
-                            localDeclarationStatement.Expression = assignmentExpression;
+                            localDeclarationStatement.Statement = assignmentStatement;
                             return true;
                         }
                     }
+
+
                 }
 
                 if(tokenReader.Expect(LexKind.Keyword, "function", 1))
                 {
                     tokenReader.Skip(1);
-                    if(ParseFunctionDeclarationExpression(out FunctionDeclarationExpression functionDeclarationExpression))
+                    if(ParseFunctionDeclarationStatement(out FunctionDeclarationStatement functionDeclarationStatement))
                     {
-                        localDeclarationStatement.Expression = functionDeclarationExpression;
+                        localDeclarationStatement.Statement = functionDeclarationStatement;
                         return true;
                     }
                 }
@@ -1152,19 +1201,24 @@ namespace Loom.Parser.ASTGenerator
             }
 
 
-            if (ParseFunctionExpression(null, out Expression functionExpression))
+            if (ParseFunctionExpressions(out ExpressionList expressionList))
             {
-                if (ParseCallStatement(functionExpression,out CallStatement callStatement))
+                if(expressionList.Count == 1)
                 {
-                    statement = callStatement;
-                    return true;
+                    if (ParseCallStatement(expressionList.First(), out CallStatement callStatement))
+                    {
+                        statement = callStatement;
+                        return true;
+                    }
                 }
 
-                if (ParseAssignmentStatement(functionExpression, out AssignmentStatement assignmentStatement))
+                if (ParseAssignmentStatement(expressionList, out AssignmentStatement assignmentStatement))
                 {
                     statement = assignmentStatement;
                     return true;
                 }
+
+                throw new Exception("Invalid parsing");
             }
 
 

@@ -13,27 +13,22 @@ namespace Loom.Parser.ASTGenerator.AST.Statements
     class AssignmentStatement : Statement
     {
         /// <summary>
-        /// Determines if the variable is localized to a scope
-        /// </summary>
-        public bool IsLocal { get; set; }
-
-        /// <summary>
         /// The name of the variable being declared
         /// </summary>
-        public Expression Variable { get; set; }
+        public ExpressionList Variables { get; set; }
 
         /// <summary>
         /// The value being assigned to the variable
         /// </summary>
-        public Expression Value { get; set; }
+        public ExpressionList Values { get; set; }
 
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
         public AssignmentStatement()
         {
-            this.IsLocal = false;
-            this.Value = null;
+            this.Variables = new ExpressionList();
+            this.Values = new ExpressionList();
         }
     }
 }
