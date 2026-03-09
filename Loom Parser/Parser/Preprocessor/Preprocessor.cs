@@ -18,29 +18,29 @@ namespace Loom.Parser.Preprocessor
             tokenReader = new LexTokenReader(lexTokens);
         }
 
-        void RemoveComment()
+        bool RemoveComment()
         {
             if (tokenReader.Expect(LexKind.Sub)
                     && tokenReader.Expect(LexKind.Sub, 1))
             {
-                bool isShortComment = false;
+                bool isLongComment = false;
 
                 if(tokenReader.Expect(LexKind.BracketOpen, 2)
                     && tokenReader.Expect(LexKind.BracketOpen, 3))
                 {
-                    isShortComment = true;
+                    isLongComment = true;
                 }
 
                 for (; ; )
                 {
                     tokenReader.Remove();
 
-                    if (tokenReader.Expect(LexKind.NewLine))
+                    if (!isLongComment && tokenReader.Expect(LexKind.NewLine))
                     {
                         break;
                     }
 
-                    if(isShortComment
+                    if(isLongComment
                         && tokenReader.Expect(LexKind.BracketClose)
                         && tokenReader.Expect(LexKind.BracketClose, 1))
                     {
@@ -51,17 +51,21 @@ namespace Loom.Parser.Preprocessor
 
                     if (tokenReader.Expect(LexKind.EOF))
                     {
-                        break;
+                        return true;
                     }
                 }
             }
+            return false;
         }
 
         void RemoveComments()
         {
             for (; ; )
             {
-                RemoveComment();
+                if(RemoveComment())
+                {
+                    break;
+                }
 
                 tokenReader.Skip(1);
                 if(tokenReader.Expect(LexKind.EOF))

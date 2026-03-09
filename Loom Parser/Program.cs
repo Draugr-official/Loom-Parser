@@ -22,12 +22,15 @@ namespace Loom
         {
             string script = File.ReadAllText("Tests\\Sample.lua");
 
+            Console.WriteLine("Lexing...");
             LexicalAnalyser codeLexer = new LexicalAnalyser(script);
             LexTokenList lexTokens = codeLexer.Analyze();
 
+            Console.WriteLine("Preprocessing...");
             Preprocessor preProcessor = new Preprocessor(lexTokens);
             lexTokens = preProcessor.Process();
 
+            Console.WriteLine("Generating AST...");
             ASTGenerator astGenerator = new ASTGenerator(lexTokens);
             StatementList statements = astGenerator.ParseStatements();
 
@@ -70,6 +73,7 @@ namespace Loom
             PrettyPrinter prettyPrinter = new PrettyPrinter(PrettyPrinterSettings.Beautify);
 
             Console.WriteLine("Amount of statements; " + statements.Count.ToString());
+            statements.ForEach(s => Console.WriteLine(s.GetType().FullName));
             Console.WriteLine("Original;");
             Console.WriteLine(prettyPrinter.Print(statements));
 

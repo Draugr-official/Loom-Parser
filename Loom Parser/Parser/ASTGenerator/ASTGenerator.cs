@@ -444,9 +444,42 @@ namespace Loom.Parser.ASTGenerator
             return false;
         }
 
+        bool ParseGroupedExpression(out GroupedExpression groupedExpression)
+        {
+            groupedExpression = new GroupedExpression();
+
+            if(tokenReader.Expect(LexKind.ParentheseOpen))
+            {
+                tokenReader.Skip(1);
+
+                if(tokenReader.Expect(LexKind.ParentheseClose))
+                {
+                    groupedExpression = null;
+                    return true;
+                }
+
+                if (ParseExpression(out Expression expression))
+                {
+                    groupedExpression.Expression = expression;
+                    
+                    if(tokenReader.ExpectFatal(LexKind.ParentheseClose))
+                    {
+                        tokenReader.Skip(1);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         bool ParseFunctionExpression(Expression leftExpression, out Expression expression)
         {
             expression = leftExpression;
+
+            if (ParseGroupedExpression(out GroupedExpression groupedExpression))
+            {
+                expression = groupedExpression;
+            }
 
             if (ParseFunctionDeclarationExpression(out FunctionDeclarationExpression functionDeclarationExpression))
             {
@@ -504,6 +537,11 @@ namespace Loom.Parser.ASTGenerator
             {
                 expression = ifExpression;
                 return true;
+            }
+
+            if (ParseGroupedExpression(out GroupedExpression groupedExpression))
+            {
+                expression = groupedExpression;
             }
 
             if (ParseNegativeExpression(out NegativeExpression negativeExpression))
@@ -610,7 +648,33 @@ namespace Loom.Parser.ASTGenerator
         }
 
         /* Statements */
+        bool ParseGroupedStatement(out GroupedStatement groupedStatement)
+        {
+            groupedStatement = new GroupedStatement();
 
+            if (tokenReader.Expect(LexKind.ParentheseOpen))
+            {
+                tokenReader.Skip(1);
+
+                if (tokenReader.Expect(LexKind.ParentheseClose))
+                {
+                    groupedStatement = null;
+                    return true;
+                }
+
+                if (ParseExpression(out Expression expression))
+                {
+                    groupedStatement.Expression = expression;
+
+                    if (tokenReader.ExpectFatal(LexKind.ParentheseClose))
+                    {
+                        tokenReader.Skip(1);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
         bool ParseReturnStatement(out ReturnStatement returnStatement)
         {
             returnStatement = new ReturnStatement();
@@ -995,13 +1059,48 @@ namespace Loom.Parser.ASTGenerator
             return false;
         }
 
+        bool ParseLocalDeclarationStatement(out LocalDeclarationStatement localDeclarationStatement)
+        {
+            localDeclarationStatement = new LocalDeclarationStatement();
+
+            if(tokenReader.Expect(LexKind.Keyword, "local"))
+            {
+                if(tokenReader.Expect(LexKind.Identifier, 1))
+                {
+                    tokenReader.Skip(1);
+                    if(ParseIdentifierExpression(out IdentifierExpression identifierExpression))
+                    {
+                        if (ParseAssignmentExpression(identifierExpression, out AssignmentExpression assignmentExpression))
+                        {
+                            localDeclarationStatement.Expression = assignmentExpression;
+                            return true;
+                        }
+                    }
+                }
+
+                if(tokenReader.Expect(LexKind.Keyword, "function", 1))
+                {
+                    tokenReader.Skip(1);
+                    if(ParseFunctionDeclarationExpression(out FunctionDeclarationExpression functionDeclarationExpression))
+                    {
+                        localDeclarationStatement.Expression = functionDeclarationExpression;
+                        return true;
+                    }
+                }
+
+                throw new Exception("Identifier or function expected after keyword 'local'");
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Generates a statement at the given position in the token reader
         /// </summary>
         bool ParseStatement(out Statement statement)
         {
             statement = new Statement();
-            if(ParseFunctionDeclarationStatement(out FunctionDeclarationStatement functionDeclarationStatement))
+            if (ParseFunctionDeclarationStatement(out FunctionDeclarationStatement functionDeclarationStatement))
             {
                 statement = functionDeclarationStatement;
                 return true;
@@ -1046,28 +1145,33 @@ namespace Loom.Parser.ASTGenerator
                 statement = continueStatement;
                 return true;
             }
-
-
-            if(ParseFunctionExpression(null, out Expression expression))
+            if(ParseLocalDeclarationStatement(out LocalDeclarationStatement localDeclarationStatement))
             {
-                if (ParseAssignmentStatement(expression, out AssignmentStatement assignmentStatement))
-                {
-                    statement = assignmentStatement;
-                    return true;
-                }
-                if (ParseCallStatement(expression,out CallStatement callStatement))
+                statement = localDeclarationStatement;
+                return true;
+            }
+
+
+            if (ParseFunctionExpression(null, out Expression functionExpression))
+            {
+                if (ParseCallStatement(functionExpression,out CallStatement callStatement))
                 {
                     statement = callStatement;
                     return true;
                 }
-            }
-            else
-            {
-                if (ParseAssignmentStatement(null, out AssignmentStatement assignmentStatement))
+
+                if (ParseAssignmentStatement(functionExpression, out AssignmentStatement assignmentStatement))
                 {
                     statement = assignmentStatement;
                     return true;
                 }
+            }
+
+
+            if (ParseGroupedStatement(out GroupedStatement groupedStatement))
+            {
+                statement = groupedStatement;
+                return true;
             }
 
             return false;

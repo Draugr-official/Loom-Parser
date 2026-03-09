@@ -1,1 +1,1 @@
-﻿(function(...) print(...) end)("test")
+﻿local ah = "beh"

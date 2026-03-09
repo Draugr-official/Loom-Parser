@@ -57,6 +57,7 @@
     <Compile Include="Parser\ASTGenerator\AST\Expressions\Expression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\ExpressionList.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\FunctionDeclarationExpression.cs" />
+    <Compile Include="Parser\ASTGenerator\AST\Expressions\GroupedExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\IdentifierExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\IfExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\IndexExpression.cs" />
@@ -75,8 +76,9 @@
     <Compile Include="Parser\ASTGenerator\AST\Statements\ForStatement.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Statements\FunctionDeclarationStatement.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Statements\GenericForStatement.cs" />
+    <Compile Include="Parser\ASTGenerator\AST\Statements\GroupedStatement.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Statements\IfStatement.cs" />
-    <Compile Include="Parser\ASTGenerator\AST\Statements\LocalStatement.cs" />
+    <Compile Include="Parser\ASTGenerator\AST\Statements\LocalDeclarationStatement.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Statements\RepeatStatement.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Statements\ReturnStatement.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Statements\Statement.cs" />

@@ -40,6 +40,13 @@ namespace Loom.Parser.PrettyPrint
             scriptBuilder.Append("]");
         }
 
+        void GenerateGroupedExpression(GroupedExpression groupedExpression, string indent = "", string newLine = " ")
+        {
+            scriptBuilder.Append("(");
+            GenerateExpression(groupedExpression.Expression, indent, newLine);
+            scriptBuilder.Append(")");
+        }
+
         void GenerateArrayExpression(ArrayExpression arrayExpression)
         {
             scriptBuilder.Append("{ ");
@@ -138,7 +145,7 @@ namespace Loom.Parser.PrettyPrint
             scriptBuilder.Append($"function{(functionDeclarationExpression.IsAnonymous ? "" : $" {functionDeclarationExpression.Name.Identifier}")}(");
             GenerateExpressions(functionDeclarationExpression.Parameters);
             scriptBuilder.Append($"){newLine}");
-            GenerateStatements(functionDeclarationExpression.Body, indent + PrinterSettings.Indentation, PrinterSettings.NewLine);
+            GenerateStatements(functionDeclarationExpression.Body, indent, newLine);
             scriptBuilder.Append($"{indent}end");
         }
 
@@ -222,6 +229,10 @@ namespace Loom.Parser.PrettyPrint
             {
                 GenerateArrayExpression(arrayExpression);
             }
+            if(expression is GroupedExpression groupedExpression)
+            {
+                GenerateGroupedExpression(groupedExpression, indent, newLine);
+            }
             if(expression is CallExpression functionCallExpression)
             {
                 GenerateCallExpression(functionCallExpression, indent, newLine);
@@ -282,7 +293,7 @@ namespace Loom.Parser.PrettyPrint
                 GenerateExpression(callStatement.Function);
                 scriptBuilder.Append("(");
                 GenerateExpressions(callStatement.Arguments, indent, PrinterSettings.NewLine);
-                scriptBuilder.Append($"){PrinterSettings.NewLine}");
+                scriptBuilder.Append($")");
                 return true;
             }
             if (statement is FunctionDeclarationStatement functionDeclarationStatement)
@@ -407,6 +418,12 @@ namespace Loom.Parser.PrettyPrint
             {
                 scriptBuilder.Append($"{indent}return ");
                 GenerateExpression(returnStatement.ReturnValue, indent, PrinterSettings.NewLine);
+                return true;
+            }
+            if(statement is LocalDeclarationStatement localDeclarationStatement)
+            {
+                scriptBuilder.Append($"{indent}local ");
+                GenerateExpression(localDeclarationStatement.Expression, indent, PrinterSettings.NewLine);
                 return true;
             }
 
