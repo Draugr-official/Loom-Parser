@@ -707,7 +707,8 @@ namespace Loom.Parser.ASTGenerator
                     break;
                 }
 
-                if (tokenReader.Expect(LexKind.Comma))
+                if (tokenReader.Expect(LexKind.Comma) 
+                    || (parsingArray && tokenReader.Expect(LexKind.Semicolon)))
                 {
                     tokenReader.Skip(1);
                 }
@@ -715,6 +716,7 @@ namespace Loom.Parser.ASTGenerator
                 {
                     break;
                 }
+
             }
 
             return expressionList;
@@ -1245,7 +1247,12 @@ namespace Loom.Parser.ASTGenerator
                     statements.Add(statement);
                 }
 
-                if(tokenReader.Expect(LexKind.EOF))
+                if (tokenReader.Expect(LexKind.Semicolon))
+                {
+                    tokenReader.Consume();
+                }
+
+                if (tokenReader.Expect(LexKind.EOF))
                 {
                     break;
                 }

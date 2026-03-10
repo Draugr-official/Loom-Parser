@@ -1,61 +1,60 @@
-﻿
-
-du.check_min_api_version("5.0.2", "darkroom_demo") 
-
-local function destroy()
-    
-end
-
-
-local MODULE_NAME = "darkroom_demo"
-
-local gettext = dt.gettext.gettext
-
-local function _(msgid)
-  return gettext(msgid)
-end
-
-local sleep = dt.control.sleep
-
-
-local current_view = dt.gui.current_view()
-
-
-local images = dt.gui.action_images
-dt.print_log(#images .. " images selected")
-if images or #images == 0 then
-  dt.print_log("no images selected, creating selection")
-end
-
-dt.gui.current_view(dt.gui.views.darkroom)
-
-local max_images = 10
-
-dt.print(_("showing images, with a pause between each"))
-sleep(1500)
-
-for i, img in ipairs(dt.collection) do 
-  dt.print(string.format(_("displaying image "), i))
-  dt.gui.views.darkroom.display_image(img)
-  sleep(1500)
-  if i == max_images then
-    break
-  end
-end
-
-dt.print(_("restoring view"))
-sleep(1500)
-dt.gui.current_view(current_view)
-
-local script_data = {}
-
-script_data.metadata = {
-  name = _("darkroom demo"),
-  purpose = _("example demonstrating how to control image display in darkroom mode"),
-  author = "Bill Ferguson <wpferguson@gmail.com>",
-  help = "https://docs.darktable.org/lua/stable/lua.scripts.manual/scripts/examples/darkroom_demo"
+﻿BaseObject = {
+  super   = nil,
+  name    = "Object",
+  new     =
+    function(class)
+      local obj  = {class = class}
+      local meta = {
+        __index = function(self,key) return class.methods[key] end 
+      }            
+      setmetatable(obj,meta)
+      return obj
+    end,
+  methods = {classname = function(self) return(self.class.name) end},
+  data    = {}
 }
 
-script_data.destroy = destroy
+function setclass(name, super)
+  if (super == nil) then
+    super = BaseObject
+  end
 
-return script_data
+  local class = {
+    super = super; 
+    name  = name; 
+    new   =
+      function(self, ...) 
+        local obj = super.new(self, "___CREATE_ONLY___");
+          -- check if calling function init
+          -- pass arguments into init function
+        if (super.methods.init) then
+          obj.init_super = super.methods.init
+        end
+
+	if (self.methods.init) then
+            if (tostring(arg[1]) ~= "___CREATE_ONLY___") then
+              obj.init = self.methods.init
+              if obj.init then
+                obj:init(unpack(arg))
+              end
+            end
+	end
+
+        return obj
+      end,  
+    methods = {}
+  }
+    
+  -- if class slot unavailable, check super class
+  -- if applied to argument, pass it to the class method new        
+  setmetatable(class, {
+    __index = function(self,key) return self.super[key] end,
+    __call  = function(self,...) return self.new(self,unpack(arg)) end 
+  })
+
+  -- if instance method unavailable, check method slot in super class    
+  setmetatable(class.methods, {
+    __index = function(self,key) return class.super.methods[key] end
+  })
+  return class
+end    

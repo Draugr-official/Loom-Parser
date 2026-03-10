@@ -47,19 +47,19 @@ namespace Loom.Parser.PrettyPrint
             scriptBuilder.Append(")");
         }
 
-        void GenerateArrayExpression(ArrayExpression arrayExpression)
+        void GenerateArrayExpression(ArrayExpression arrayExpression, string indent = "", string newLine = " ")
         {
-            scriptBuilder.Append("{ ");
+            scriptBuilder.Append($"{{{newLine}");
             foreach(Expression expression in arrayExpression.Array)
             {
-                GenerateExpression(expression);
+                GenerateExpression(expression, indent, newLine);
                 
                 if(arrayExpression.Array.IndexOf(expression) != arrayExpression.Array.Count - 1)
                 {
-                    scriptBuilder.Append(", ");
+                    scriptBuilder.Append($",{newLine}");
                 }
             }
-            scriptBuilder.Append(" }");
+            scriptBuilder.Append($"{indent}{newLine}}}");
         }
 
         void GenerateConcatExpression(ConcatExpression concatExpression)
@@ -144,12 +144,12 @@ namespace Loom.Parser.PrettyPrint
         {
             scriptBuilder.Append($"function{(functionDeclarationExpression.IsAnonymous ? "" : $" {functionDeclarationExpression.Name.Identifier}")}(");
             GenerateExpressions(functionDeclarationExpression.Parameters);
-            scriptBuilder.Append($"){newLine}");
-            GenerateStatements(functionDeclarationExpression.Body, indent, newLine);
+            scriptBuilder.Append($"){PrinterSettings.NewLine}");
+            GenerateStatements(functionDeclarationExpression.Body, indent + PrinterSettings.Indentation, newLine);
             scriptBuilder.Append($"{indent}end");
         }
 
-        void GenerateAssignmentExpression(AssignmentExpression assignmentExpression, string indent = "")
+        void GenerateAssignmentExpression(AssignmentExpression assignmentExpression, string indent = "", string newLine = " ")
         {
             scriptBuilder.Append(indent);
             GenerateExpressions(assignmentExpression.Variables);
@@ -227,7 +227,7 @@ namespace Loom.Parser.PrettyPrint
             }
             if(expression is ArrayExpression arrayExpression)
             {
-                GenerateArrayExpression(arrayExpression);
+                GenerateArrayExpression(arrayExpression, indent, newLine);
             }
             if(expression is GroupedExpression groupedExpression)
             {
@@ -247,7 +247,7 @@ namespace Loom.Parser.PrettyPrint
             }
             if(expression is AssignmentExpression assignmentExpression)
             {
-                GenerateAssignmentExpression(assignmentExpression);
+                GenerateAssignmentExpression(assignmentExpression, indent);
             }
             if(expression is IfExpression ifExpression)
             {
@@ -292,7 +292,7 @@ namespace Loom.Parser.PrettyPrint
                 scriptBuilder.Append(indent);
                 GenerateExpression(callStatement.Function);
                 scriptBuilder.Append("(");
-                GenerateExpressions(callStatement.Arguments, indent, PrinterSettings.NewLine);
+                GenerateExpressions(callStatement.Arguments, indent + PrinterSettings.Indentation, PrinterSettings.NewLine);
                 scriptBuilder.Append($")");
                 return true;
             }
@@ -300,7 +300,7 @@ namespace Loom.Parser.PrettyPrint
             {
                 scriptBuilder.Append($"{indent + (functionDeclarationStatement.IsLocal ? "local " : "")}function {functionDeclarationStatement.Name.Identifier}(");
                 GenerateExpressions(functionDeclarationStatement.Parameters);
-                scriptBuilder.Append($"){PrinterSettings.NewLine}");;
+                scriptBuilder.Append($"){PrinterSettings.NewLine}");
                 GenerateStatements(functionDeclarationStatement.Body, indent + PrinterSettings.Indentation, PrinterSettings.NewLine);
                 scriptBuilder.Append($"{indent}end");
                 return true;
@@ -310,7 +310,7 @@ namespace Loom.Parser.PrettyPrint
                 scriptBuilder.Append($"{indent}");
                 GenerateExpressions(assignmentStatement.Variables);
                 scriptBuilder.Append(" = ");
-                GenerateExpressions(assignmentStatement.Values);
+                GenerateExpressions(assignmentStatement.Values, indent + PrinterSettings.Indentation, PrinterSettings.NewLine);
                 return true;
             }
             if(statement is IfStatement ifStatement)
@@ -420,7 +420,7 @@ namespace Loom.Parser.PrettyPrint
             if(statement is LocalDeclarationStatement localDeclarationStatement)
             {
                 scriptBuilder.Append($"{indent}local ");
-                GenerateStatement(localDeclarationStatement.Statement, indent);
+                GenerateStatement(localDeclarationStatement.Statement, "");
                 return true;
             }
 
