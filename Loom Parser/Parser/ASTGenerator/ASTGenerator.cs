@@ -412,11 +412,11 @@ namespace Loom.Parser.ASTGenerator
                 tokenReader.Skip(1);
                 if (ParseExpression(out Expression expression))
                 {
-                    lengthExpression.Identifier = expression;
+                    lengthExpression.Expression = expression;
                     return true;
                 }
 
-                throw new Exception("Length expression missing identifier");
+                throw new Exception("Length expression missing expression");
             }
 
             return false;
@@ -430,11 +430,11 @@ namespace Loom.Parser.ASTGenerator
                 tokenReader.Skip(1);
                 if (ParseExpression(out Expression expression))
                 {
-                    negativeExpression.Identifier = expression;
+                    negativeExpression.Expression = expression;
                     return true;
                 }
 
-                throw new Exception("Negative expression missing identifier");
+                throw new Exception("Negative expression missing expression");
             }
 
             return false;
@@ -596,6 +596,25 @@ namespace Loom.Parser.ASTGenerator
             return true;
         }
 
+        bool ParseNotExpression(out NotExpression notExpression)
+        {
+            notExpression = new NotExpression();
+
+            if (tokenReader.Expect(LexKind.Sub))
+            {
+                tokenReader.Skip(1);
+                if (ParseExpression(out Expression expression))
+                {
+                    notExpression.Expression = expression;
+                    return true;
+                }
+
+                throw new Exception("Not expression missing expression");
+            }
+
+            return false;
+        }
+
         bool ParseExpression(out Expression expression, bool parsingArray = false)
         {
             expression = null;
@@ -619,6 +638,10 @@ namespace Loom.Parser.ASTGenerator
             if (ParseLengthExpression(out LengthExpression lengthExpression))
             {
                 expression = lengthExpression;
+            }
+            if(ParseNotExpression(out NotExpression notExpression))
+            {
+                expression = notExpression;
             }
             if (ParseNilExpression(out NilExpression nilExpression))
             {
@@ -1124,6 +1147,8 @@ namespace Loom.Parser.ASTGenerator
                             localDeclarationStatement.Statement = assignmentStatement;
                             return true;
                         }
+
+                        return true;
                     }
 
 

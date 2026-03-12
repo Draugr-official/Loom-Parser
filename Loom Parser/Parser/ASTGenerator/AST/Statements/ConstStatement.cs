@@ -8,6 +8,6 @@ namespace Loom.Parser.ASTGenerator.AST.Statements
 {
     internal class ConstStatement : Statement
     {
-        // May be implimented soem time in the future
+        // May be implimented some time in the future
     }
 }

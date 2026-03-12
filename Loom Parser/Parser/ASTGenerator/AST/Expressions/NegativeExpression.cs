@@ -8,6 +8,6 @@ namespace Loom.Parser.ASTGenerator.AST.Expressions
 {
     internal class NegativeExpression : Expression
     {
-        public Expression Identifier { get; set; } = new Expression();
+        public Expression Expression { get; set; } = new Expression();
     }
 }

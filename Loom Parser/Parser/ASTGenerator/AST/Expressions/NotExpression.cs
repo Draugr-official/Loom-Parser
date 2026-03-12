@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Loom.Parser.ASTGenerator.AST.Expressions
 {
-    internal class LengthExpression : Expression
+    internal class NotExpression : Expression
     {
-        public Expression Expression { get; set; } = new Expression();
+        public Expression Expression { get; set; }
     }
 }

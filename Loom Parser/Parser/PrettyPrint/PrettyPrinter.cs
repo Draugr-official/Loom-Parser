@@ -187,12 +187,17 @@ namespace Loom.Parser.PrettyPrint
         void GenerateLengthExpression(LengthExpression lengthExpression)
         {
             scriptBuilder.Append("#");
-            GenerateExpression(lengthExpression.Identifier);
+            GenerateExpression(lengthExpression.Expression);
         }
         void GenerateNegativeExpression(NegativeExpression negativeExpression)
         {
             scriptBuilder.Append("-");
-            GenerateExpression(negativeExpression.Identifier);
+            GenerateExpression(negativeExpression.Expression);
+        }
+        void GenerateNotExpression(NotExpression notExpression)
+        {
+            scriptBuilder.Append("not ");
+            GenerateExpression(notExpression.Expression);
         }
         void GenerateNilExpression(NilExpression nilExpression)
         {
@@ -260,6 +265,10 @@ namespace Loom.Parser.PrettyPrint
             if(expression is NegativeExpression negativeExpression)
             {
                 GenerateNegativeExpression(negativeExpression);
+            }
+            if(expression is NotExpression notExpresion)
+            {
+                GenerateNotExpression(notExpresion);
             }
             if(expression is LogicalExpression logicalExpression)
             {

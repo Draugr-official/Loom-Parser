@@ -65,6 +65,7 @@
     <Compile Include="Parser\ASTGenerator\AST\Expressions\LogicalExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\NegativeExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\NilExpression.cs" />
+    <Compile Include="Parser\ASTGenerator\AST\Expressions\NotExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\RelationalExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\VarargExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Statements\AssignmentStatement.cs" />
