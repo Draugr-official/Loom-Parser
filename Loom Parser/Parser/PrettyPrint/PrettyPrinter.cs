@@ -204,8 +204,30 @@ namespace Loom.Parser.PrettyPrint
             scriptBuilder.Append("nil");
         }
 
+        void GenerateMemberExpression(MemberExpression memberExpression)
+        {
+            GenerateExpression(memberExpression.Parent);
+            scriptBuilder.Append(memberExpression.IsInvoke ? ":" : ".");
+            GenerateExpression(memberExpression.Expression);
+        }
+
+        void GenerateRecordExpression(RecordExpression recordExpression)
+        {
+            scriptBuilder.Append("[");
+            GenerateExpression(recordExpression.Expression);
+            scriptBuilder.Append("]");
+        }
+
         void GenerateExpression(Expression expression, string indent = "", string newLine = " ")
         {
+            if(expression is RecordExpression recordExpression)
+            {
+                GenerateRecordExpression(recordExpression);
+            }
+            if(expression is MemberExpression memberExpression)
+            {
+                GenerateMemberExpression(memberExpression);
+            }
             if(expression is ConstantExpression constantExpression)
             {
                 GenerateConstantExpression(constantExpression);
@@ -429,6 +451,12 @@ namespace Loom.Parser.PrettyPrint
             if(statement is LocalDeclarationStatement localDeclarationStatement)
             {
                 scriptBuilder.Append($"{indent}local ");
+                if(localDeclarationStatement.Expressions != null)
+                {
+                    GenerateExpressions(localDeclarationStatement.Expressions);
+                    return true;
+                }
+
                 GenerateStatement(localDeclarationStatement.Statement, "");
                 return true;
             }

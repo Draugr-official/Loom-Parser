@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace Loom.Parser.ASTGenerator.AST.Expressions
 {
-    /// <summary>
-    /// Expression superclass
-    /// </summary>
-    public class Expression
+    public class RecordExpression : Expression
     {
+        public Expression Expression { get; set; }
     }
 }

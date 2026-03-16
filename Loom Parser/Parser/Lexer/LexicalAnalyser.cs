@@ -110,18 +110,25 @@ namespace Loom.Parser.Lexer
 
                     case ';': kind = LexKind.Semicolon; break;
 
+                    case ':': kind = LexKind.Colon; break;
+
                     case ',': kind = LexKind.Comma; break;
 
                     case '.':
                         {
+                            kind = LexKind.Dot;
+
                             if(Input[i + 1] == '.')
                             {
                                 kind = LexKind.Concat;
-                                if (Input[i + 2] == '.')
+                                i++;
+                                if (Input[i + 1] == '.')
                                 {
+                                    i++;
                                     kind = LexKind.Vararg;
                                 }
                             }
+
                             break;
                         }
 

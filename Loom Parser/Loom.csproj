@@ -63,9 +63,11 @@
     <Compile Include="Parser\ASTGenerator\AST\Expressions\IndexExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\LengthExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\LogicalExpression.cs" />
+    <Compile Include="Parser\ASTGenerator\AST\Expressions\MemberExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\NegativeExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\NilExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\NotExpression.cs" />
+    <Compile Include="Parser\ASTGenerator\AST\Expressions\RecordExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\RelationalExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Expressions\VarargExpression.cs" />
     <Compile Include="Parser\ASTGenerator\AST\Statements\AssignmentStatement.cs" />

@@ -10,6 +10,7 @@ using Loom.Parser.ASTGenerator.AST;
 using System.Runtime.InteropServices;
 using Loom.Parser.Lexer;
 using System.Threading;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Loom.Parser.ASTGenerator
 {
@@ -64,14 +65,11 @@ namespace Loom.Parser.ASTGenerator
             {
                 tokenReader.Skip(1);
 
-                Console.WriteLine("Yep!");
                 if(tokenReader.Expect(LexKind.BraceClose))
                 {
-                    Console.WriteLine("Ok!");
                     tokenReader.Skip(1);
                     return true;
                 }
-                Console.WriteLine("Nop!");
 
                 arrayExpression.Array = ParseExpressions(true);
 
@@ -600,7 +598,7 @@ namespace Loom.Parser.ASTGenerator
         {
             notExpression = new NotExpression();
 
-            if (tokenReader.Expect(LexKind.Sub))
+            if (tokenReader.Expect(LexKind.Keyword, "not"))
             {
                 tokenReader.Skip(1);
                 if (ParseExpression(out Expression expression))
@@ -610,6 +608,118 @@ namespace Loom.Parser.ASTGenerator
                 }
 
                 throw new Exception("Not expression missing expression");
+            }
+
+            return false;
+        }
+
+        bool ParseMemberExpression(Expression parentExpression, out MemberExpression memberExpression)
+        {
+            memberExpression = new MemberExpression();
+
+            if(tokenReader.Expect(LexKind.Dot))
+            {
+                tokenReader.Skip(1);
+                memberExpression.IsInvoke = false;
+            }
+            else
+            {
+                return false;
+            }
+
+            if(tokenReader.Expect(LexKind.Colon))
+            {
+                tokenReader.Skip(1);
+                memberExpression.IsInvoke = true;
+            }
+            else
+            {
+                return false;
+            }
+
+            if(ParseExpression(out Expression expression))
+            {
+                memberExpression.Expression = expression;
+                return true;
+            }
+
+            throw new Exception("Invalid member expression");
+        }
+
+        bool ParseRecordExpression(out RecordExpression recordExpression)
+        {
+            recordExpression = new RecordExpression();
+
+            if(tokenReader.Expect(LexKind.BracketOpen))
+            {
+                tokenReader.Skip(1);
+                if (ParseExpression(out Expression expression))
+                {
+                    recordExpression.Expression = expression;
+                    if(tokenReader.ExpectFatal(LexKind.BracketClose))
+                    {
+                        tokenReader.Skip(1);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        bool ParseSingleExpression(out Expression expression)
+        {
+            expression = null;
+
+            if (ParseGroupedExpression(out GroupedExpression groupedExpression))
+            {
+                expression = groupedExpression;
+                return true;
+            }
+            if (ParseNegativeExpression(out NegativeExpression negativeExpression))
+            {
+                expression = negativeExpression;
+                return true;
+            }
+            if (ParseLengthExpression(out LengthExpression lengthExpression))
+            {
+                expression = lengthExpression;
+                return true;
+            }
+            if (ParseNotExpression(out NotExpression notExpression))
+            {
+                expression = notExpression;
+                return true;
+            }
+            if (ParseNilExpression(out NilExpression nilExpression))
+            {
+                expression = nilExpression;
+                return true;
+            }
+            if (ParseIdentifierExpression(out IdentifierExpression identifierExpression))
+            {
+                expression = identifierExpression;
+                return true;
+            }
+            if (ParseVarargExpression(out VarargExpression varargExpression))
+            {
+                expression = varargExpression;
+                return true;
+            }
+            if (ParseConstantExpression(out ConstantExpression constantExpression))
+            {
+                expression = constantExpression;
+                return true;
+            }
+            if (ParseArrayExpression(out ArrayExpression tableExpression))
+            {
+                expression = tableExpression;
+                return true;
+            }
+            if(ParseRecordExpression(out RecordExpression recordExpression))
+            {
+                expression = recordExpression;
+                return true;
             }
 
             return false;
@@ -625,91 +735,74 @@ namespace Loom.Parser.ASTGenerator
                 expression = ifExpression;
                 return true;
             }
-
-            if (ParseGroupedExpression(out GroupedExpression groupedExpression))
-            {
-                expression = groupedExpression;
-            }
-
-            if (ParseNegativeExpression(out NegativeExpression negativeExpression))
-            {
-                expression = negativeExpression;
-            }
-            if (ParseLengthExpression(out LengthExpression lengthExpression))
-            {
-                expression = lengthExpression;
-            }
-            if(ParseNotExpression(out NotExpression notExpression))
-            {
-                expression = notExpression;
-            }
-            if (ParseNilExpression(out NilExpression nilExpression))
-            {
-                expression = nilExpression;
-            }
-
-
-            // Expression with left side expressions
-
             if (ParseFunctionDeclarationExpression(out FunctionDeclarationExpression functionDeclarationExpression))
             {
                 expression = functionDeclarationExpression;
+                return true;
             }
 
-            if (ParseIdentifierExpression(out IdentifierExpression identifierExpression))
+            if(ParseSingleExpression(out Expression singleExpression))
             {
-                expression = identifierExpression;
+                expression = singleExpression;
+            }
+            else
+            {
+                return false;
             }
 
-            if (ParseVarargExpression(out VarargExpression varargExpression))
+            // Expression with left side expressions
+            for(; ; )
             {
-                expression = varargExpression;
-            }
-            if (ParseConstantExpression(out ConstantExpression constantExpression))
-            {
-                expression = constantExpression;
-            }
+                if(ParseMemberExpression(expression, out MemberExpression memberExpression))
+                {
+                    expression = memberExpression;
+                    continue;
+                }
 
-            if (ParseArrayExpression(out ArrayExpression tableExpression))
-            {
-                Console.WriteLine("Hvor er fu");
-                expression = tableExpression;
-            }
+                if (ParseCallExpression(expression, out CallExpression callExpression))
+                {
+                    expression = callExpression;
+                    continue;
+                }
 
-            if (ParseCallExpression(expression, out CallExpression callExpression))
-            {
-                expression = callExpression;
-            }
+                if (ParseIndexExpression(expression, out IndexExpression indexExpression))
+                {
+                    expression = indexExpression;
+                    continue;
+                }
 
-            if (ParseIndexExpression(expression, out IndexExpression indexExpression))
-            {
-                expression = indexExpression;
-            }
+                // Expressions with left and right side expressions
+                if (ParseRelationalExpression(expression, out RelationalExpression relationalExpression))
+                {
+                    expression = relationalExpression;
+                    continue;
+                }
 
-            // Expressions with left and right side expressions
-            if (ParseRelationalExpression(expression, out RelationalExpression relationalExpression))
-            {
-                expression = relationalExpression;
-            }
+                if (ParseArithmeticExpression(expression, out ArithmeticExpression arithmeticExpression))
+                {
+                    expression = arithmeticExpression;
+                    continue;
+                }
 
-            if (ParseArithmeticExpression(expression, out ArithmeticExpression arithmeticExpression))
-            {
-                expression = arithmeticExpression;
-            }
+                if (ParseLogicalExpression(expression, out LogicalExpression logicalExpression))
+                {
+                    expression = logicalExpression;
+                    continue;
+                }
 
-            if(ParseLogicalExpression(expression, out LogicalExpression logicalExpression))
-            {
-                expression = logicalExpression;
-            }
+                if (ParseConcatExpression(expression, out ConcatExpression concatExpression))
+                {
+                    expression = concatExpression;
+                    continue;
+                }
 
-            if (ParseConcatExpression(expression, out ConcatExpression concatExpression))
-            {
-                expression = concatExpression;
-            }
+                if (parsingArray && ParseAssignmentExpression(expression, out AssignmentExpression assignmentExpression))
+                {
+                    expression = assignmentExpression;
+                    continue;
+                }
 
-            if(parsingArray && ParseAssignmentExpression(expression, out AssignmentExpression assignmentExpression))
-            {
-                expression = assignmentExpression;
+                break;
             }
 
             return expression != null;
@@ -1046,17 +1139,10 @@ namespace Loom.Parser.ASTGenerator
         {
             functionDeclarationStatement = new FunctionDeclarationStatement();
 
-            int localOffset = 0;
-
-            if (tokenReader.Expect(LexKind.Keyword, "local"))
+            if (tokenReader.Expect(LexKind.Keyword) && tokenReader.Peek().Value == "function")
             {
-                functionDeclarationStatement.IsLocal = true;
-                localOffset = 1;
-            }
-
-            if (tokenReader.Expect(LexKind.Keyword, localOffset) && tokenReader.Peek(localOffset).Value == "function")
-            {
-                tokenReader.Skip(localOffset + 1);
+                tokenReader.Skip(1);
+                Console.WriteLine("Attempted to parse function");
 
                 if (ParseIdentifierExpression(out IdentifierExpression identifierExpression))
                 {
@@ -1121,7 +1207,7 @@ namespace Loom.Parser.ASTGenerator
 
                 if(assignmentStatement.Values.Count == 0)
                 {
-                    throw new Exception("Assignment statement contains no values");
+                    throw new Exception($"Line {tokenReader.Peek().Line}: Assignment statement contains no values");
                 }
 
                 return true;
@@ -1148,6 +1234,7 @@ namespace Loom.Parser.ASTGenerator
                             return true;
                         }
 
+                        localDeclarationStatement.Expressions = expressionList;
                         return true;
                     }
 
