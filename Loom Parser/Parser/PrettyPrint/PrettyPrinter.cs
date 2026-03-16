@@ -384,7 +384,7 @@ namespace Loom.Parser.PrettyPrint
 
 
                 scriptBuilder.Append($" in ");
-                GenerateExpression(genericForStatement.Iterator);
+                GenerateExpressions(genericForStatement.Iterators);
                 scriptBuilder.Append($" do{PrinterSettings.NewLine}");
                 GenerateStatements(genericForStatement.Body, indent + PrinterSettings.Indentation, PrinterSettings.NewLine);
                 scriptBuilder.Append($"{indent}end");
@@ -445,7 +445,7 @@ namespace Loom.Parser.PrettyPrint
             if(statement is ReturnStatement returnStatement)
             {
                 scriptBuilder.Append($"{indent}return ");
-                GenerateExpression(returnStatement.ReturnValue, indent, PrinterSettings.NewLine);
+                GenerateExpressions(returnStatement.ReturnValues, indent, PrinterSettings.NewLine);
                 return true;
             }
             if(statement is LocalDeclarationStatement localDeclarationStatement)

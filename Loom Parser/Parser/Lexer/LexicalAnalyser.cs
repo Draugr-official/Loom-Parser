@@ -137,10 +137,6 @@ namespace Loom.Parser.Lexer
                             i++;
                             while (Input[i] != '"')
                             {
-                                if (Input[i] == '\\' && Input[i + 1] == '"')
-                                {
-                                    i++;
-                                }
                                 sb.Append(Input[i]);
                                 i++;
                             }

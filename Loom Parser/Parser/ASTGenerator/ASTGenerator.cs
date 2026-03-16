@@ -617,33 +617,37 @@ namespace Loom.Parser.ASTGenerator
         {
             memberExpression = new MemberExpression();
 
-            if(tokenReader.Expect(LexKind.Dot))
+            if (tokenReader.Expect(LexKind.Dot))
             {
                 tokenReader.Skip(1);
                 memberExpression.IsInvoke = false;
-            }
-            else
-            {
-                return false;
+
+                if (ParseExpression(out Expression expression))
+                {
+                    memberExpression.Parent = parentExpression;
+                    memberExpression.Expression = expression;
+                    return true;
+                }
+
+                throw new Exception($"Line {tokenReader.Peek().Line}: Invalid member expression");
             }
 
             if(tokenReader.Expect(LexKind.Colon))
             {
                 tokenReader.Skip(1);
                 memberExpression.IsInvoke = true;
-            }
-            else
-            {
-                return false;
+
+                if (ParseExpression(out Expression expression))
+                {
+                    memberExpression.Parent = parentExpression;
+                    memberExpression.Expression = expression;
+                    return true;
+                }
+
+                throw new Exception($"Line {tokenReader.Peek().Line}: Invalid member expression");
             }
 
-            if(ParseExpression(out Expression expression))
-            {
-                memberExpression.Expression = expression;
-                return true;
-            }
-
-            throw new Exception("Invalid member expression");
+            return false;
         }
 
         bool ParseRecordExpression(out RecordExpression recordExpression)
@@ -671,6 +675,11 @@ namespace Loom.Parser.ASTGenerator
         {
             expression = null;
 
+            if (ParseConstantExpression(out ConstantExpression constantExpression))
+            {
+                expression = constantExpression;
+                return true;
+            }
             if (ParseGroupedExpression(out GroupedExpression groupedExpression))
             {
                 expression = groupedExpression;
@@ -706,11 +715,6 @@ namespace Loom.Parser.ASTGenerator
                 expression = varargExpression;
                 return true;
             }
-            if (ParseConstantExpression(out ConstantExpression constantExpression))
-            {
-                expression = constantExpression;
-                return true;
-            }
             if (ParseArrayExpression(out ArrayExpression tableExpression))
             {
                 expression = tableExpression;
@@ -723,6 +727,35 @@ namespace Loom.Parser.ASTGenerator
             }
 
             return false;
+        }
+
+        bool ParseSingleExpressions(out ExpressionList singleExpressions)
+        {
+            singleExpressions = new ExpressionList();
+
+            for (; ; )
+            {
+                if (ParseFunctionExpression(null, out Expression expression))
+                {
+                    singleExpressions.Add(expression);
+                }
+
+                if (tokenReader.Expect(LexKind.Comma))
+                {
+                    tokenReader.Skip(1);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (singleExpressions.Count == 0)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         bool ParseExpression(out Expression expression, bool parsingArray = false)
@@ -753,15 +786,15 @@ namespace Loom.Parser.ASTGenerator
             // Expression with left side expressions
             for(; ; )
             {
-                if(ParseMemberExpression(expression, out MemberExpression memberExpression))
-                {
-                    expression = memberExpression;
-                    continue;
-                }
-
                 if (ParseCallExpression(expression, out CallExpression callExpression))
                 {
                     expression = callExpression;
+                    continue;
+                }
+
+                if (ParseMemberExpression(expression, out MemberExpression memberExpression))
+                {
+                    expression = memberExpression;
                     continue;
                 }
 
@@ -873,11 +906,9 @@ namespace Loom.Parser.ASTGenerator
             if(tokenReader.Expect(LexKind.Keyword, "return"))
             {
                 tokenReader.Skip(1);
-                if(ParseExpression(out Expression returnExpression))
-                {
-                    returnStatement.ReturnValue = returnExpression;
-                    return true;
-                }
+                returnStatement.ReturnValues = ParseExpressions();
+
+                return true;
             }
 
             return false;
@@ -976,26 +1007,25 @@ namespace Loom.Parser.ASTGenerator
                     if(tokenReader.ExpectFatal(LexKind.Keyword, "in"))
                     {
                         tokenReader.Skip(1);
-                        if(ParseExpression(out Expression iteratorExpression))
+                        ExpressionList expressions = ParseExpressions();
+                        if(expressions.Count == 0)
                         {
-                            genericForStatement.Iterator = iteratorExpression;
+                            throw new Exception("Expected at least one expression at iterator in generic for statement");
+                        }
 
-                            if(tokenReader.ExpectFatal(LexKind.Keyword, "do"))
+                        genericForStatement.Iterators = expressions;
+
+                        if (tokenReader.ExpectFatal(LexKind.Keyword, "do"))
+                        {
+                            tokenReader.Skip(1);
+                            genericForStatement.Body = ParseStatements();
+
+                            if (tokenReader.ExpectFatal(LexKind.Keyword, "end"))
                             {
                                 tokenReader.Skip(1);
-                                genericForStatement.Body = ParseStatements();
-
-                                if (tokenReader.ExpectFatal(LexKind.Keyword, "end"))
-                                {
-                                    tokenReader.Skip(1);
-                                    forStatement = genericForStatement;
-                                    return true;
-                                }
+                                forStatement = genericForStatement;
+                                return true;
                             }
-                        }
-                        else
-                        {
-                            throw new Exception("Expected valid expression at iterator in generic for statement");
                         }
                     }
                 }
@@ -1142,7 +1172,6 @@ namespace Loom.Parser.ASTGenerator
             if (tokenReader.Expect(LexKind.Keyword) && tokenReader.Peek().Value == "function")
             {
                 tokenReader.Skip(1);
-                Console.WriteLine("Attempted to parse function");
 
                 if (ParseIdentifierExpression(out IdentifierExpression identifierExpression))
                 {
@@ -1151,6 +1180,9 @@ namespace Loom.Parser.ASTGenerator
                     {
                         tokenReader.Skip(1);
                         functionDeclarationStatement.Parameters = ParseExpressions();
+
+                        tokenReader.ExpectFatal(LexKind.ParentheseClose);
+
                         tokenReader.Skip(1);
                         functionDeclarationStatement.Body = ParseStatements();
 
@@ -1222,6 +1254,8 @@ namespace Loom.Parser.ASTGenerator
 
             if(tokenReader.Expect(LexKind.Keyword, "local"))
             {
+                LexToken errorToken = tokenReader.Peek(1);
+
                 if(tokenReader.Expect(LexKind.Identifier, 1))
                 {
                     tokenReader.Skip(1);
@@ -1251,7 +1285,7 @@ namespace Loom.Parser.ASTGenerator
                     }
                 }
 
-                throw new Exception("Identifier or function expected after keyword 'local'");
+                throw new Exception($"Line {errorToken.Line}: Identifier or function expected after keyword 'local', got kind:{errorToken.Kind}, value:{errorToken.Value}");
             }
 
             return false;
@@ -1313,33 +1347,37 @@ namespace Loom.Parser.ASTGenerator
                 statement = localDeclarationStatement;
                 return true;
             }
-
-
-            if (ParseFunctionExpressions(out ExpressionList expressionList))
+            if (ParseGroupedStatement(out GroupedStatement groupedStatement))
             {
-                if(expressionList.Count == 1)
+                statement = groupedStatement;
+                return true;
+            }
+
+            ExpressionList expressions = ParseExpressions();
+            if (expressions.Count > 0)
+            {
+                if(expressions.First() is CallExpression callExpression)
                 {
-                    if (ParseCallStatement(expressionList.First(), out CallStatement callStatement))
+                    statement = new CallStatement
                     {
-                        statement = callStatement;
-                        return true;
-                    }
+                        Function = callExpression.Operand,
+                        Arguments = callExpression.Arguments
+                    };
+                    return true;
                 }
 
-                if (ParseAssignmentStatement(expressionList, out AssignmentStatement assignmentStatement))
+                if (ParseCallStatement(expressions.First(), out CallStatement callStatement))
+                {
+                    statement = callStatement;
+                    return true;
+                }
+                if (ParseAssignmentStatement(expressions, out AssignmentStatement assignmentStatement))
                 {
                     statement = assignmentStatement;
                     return true;
                 }
 
-                throw new Exception("Invalid parsing");
-            }
-
-
-            if (ParseGroupedStatement(out GroupedStatement groupedStatement))
-            {
-                statement = groupedStatement;
-                return true;
+                throw new Exception($"Line {tokenReader.Peek().Line}: Invalid parsing: " + string.Join(", ", expressions.Select(s => s.GetType().FullName)));
             }
 
             return false;

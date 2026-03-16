@@ -87,7 +87,7 @@ namespace Loom.Parser.Lexer
         /// <param name="kind"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        public bool ExpectFatal(LexKind kind, string value, int offset = 0) => (this.Base + offset <= this.LexTokens.Count - 1 && this.LexTokens[this.Base + offset].Kind == kind) && this.LexTokens[this.Base + offset].Value == value ? true : throw new Exception($"Line {this.LexTokens[this.Base + offset].Line}: {kind} && {value} expected, got {this.LexTokens[this.Base + offset].Kind} && {this.LexTokens[this.Base + offset].Value}");
+        public bool ExpectFatal(LexKind kind, string value, int offset = 0) => (this.Base + offset <= this.LexTokens.Count - 1 && this.LexTokens[this.Base + offset].Kind == kind) && this.LexTokens[this.Base + offset].Value == value ? true : throw new Exception($"Line {this.LexTokens[this.Base + offset].Line}: {kind} and {value} expected, got {this.LexTokens[this.Base + offset].Kind} and {this.LexTokens[this.Base + offset].Value}");
 
         /// <summary>
         /// Expects a lex kind at the current + offset position, will throw an exception if conditions are not met

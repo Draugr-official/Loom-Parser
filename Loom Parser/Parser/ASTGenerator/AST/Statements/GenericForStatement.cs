@@ -20,12 +20,12 @@ namespace Loom.Parser.ASTGenerator.AST.Statements
         /// <summary>
         /// The iterator of the generic for statement
         /// </summary>
-        public Expression Iterator { get; set; }
+        public ExpressionList Iterators { get; set; }
 
         public GenericForStatement()
         {
             VariableArray = new ArrayExpression();
-            Iterator = new Expression();
+            Iterators = new ExpressionList();
         }
     }
 }

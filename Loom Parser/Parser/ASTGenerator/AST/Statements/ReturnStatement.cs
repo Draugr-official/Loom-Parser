@@ -15,15 +15,15 @@ namespace Loom.Parser.ASTGenerator.AST.Statements
         /// <summary>
         /// The return expression of the return statement
         /// </summary>
-        public Expression ReturnValue { get; set; }
+        public ExpressionList ReturnValues { get; set; }
 
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        /// <param name="returnValue"></param>
-        public ReturnStatement(Expression returnValue)
+        /// <param name="returnValues"></param>
+        public ReturnStatement(ExpressionList returnValues)
         {
-            this.ReturnValue = returnValue;
+            this.ReturnValues = returnValues;
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Loom.Parser.ASTGenerator.AST.Statements
         /// </summary>
         public ReturnStatement()
         {
-            this.ReturnValue = null;
+            this.ReturnValues = null;
         }
     }
 }
